@@ -1,6 +1,7 @@
 package com.dlink.core;
 
 import com.dlink.api.FlinkAPI;
+import com.dlink.cluster.FlinkCluster;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.junit.Test;
 
@@ -24,5 +25,17 @@ public class FlinkRestAPITest {
     @Test
     public void stopTest(){
         FlinkAPI.build(address).stop("0727f796fcf9e07d89e724f7e15598cf");
+    }
+
+    @Test
+    public void versionTest(){
+        String version = FlinkAPI.build(address).getVersion();
+        System.out.println(version);
+    }
+
+    @Test
+    public void testTest(){
+        String jmaddress = FlinkCluster.testFlinkJobManagerAddress(address,"");
+        System.out.println(jmaddress);
     }
 }

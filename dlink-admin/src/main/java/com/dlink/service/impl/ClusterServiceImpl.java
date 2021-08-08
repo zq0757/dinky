@@ -1,6 +1,7 @@
 package com.dlink.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.dlink.api.FlinkAPI;
 import com.dlink.assertion.Assert;
 import com.dlink.cluster.FlinkCluster;
 import com.dlink.constant.FlinkConstant;
@@ -26,13 +27,13 @@ public class ClusterServiceImpl extends SuperServiceImpl<ClusterMapper, Cluster>
 
     @Override
     public String checkHeartBeat(String hosts,String host) {
-        return FlinkCluster.testFlinkJobManagerIP(hosts,host);
+        return FlinkCluster.testFlinkJobManagerAddress(hosts,host);
     }
 
     @Override
     public String getJobManagerAddress(Cluster cluster) {
         Assert.check(cluster);
-        String host = FlinkCluster.testFlinkJobManagerIP(cluster.getHosts(), cluster.getJobManagerHost());
+        String host = FlinkCluster.testFlinkJobManagerAddress(cluster.getHosts(), cluster.getJobManagerHost());
         Assert.checkHost(host);
         if(!host.equals(cluster.getJobManagerHost())){
             cluster.setJobManagerHost(host);
@@ -71,5 +72,10 @@ public class ClusterServiceImpl extends SuperServiceImpl<ClusterMapper, Cluster>
     @Override
     public List<Cluster> listEnabledAll() {
         return this.list(new QueryWrapper<Cluster>().eq("enabled",1));
+    }
+
+    @Override
+    public String getClusterVersion(String address) {
+        return FlinkAPI.build(address).getVersion();
     }
 }

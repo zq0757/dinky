@@ -40,7 +40,7 @@
             <artifactId>junit</artifactId>
             <scope>provided</scope>
         </dependency>
-        <dependency>
+        <!--<dependency>
             <groupId>com.dlink</groupId>
             <artifactId>dlink-client-1.12</artifactId>
             <scope>provided</scope>
@@ -54,6 +54,6 @@
             <groupId>com.dlink</groupId>
             <artifactId>dlink-function</artifactId>
             <scope>provided</scope>
-        </dependency>
+        </dependency>-->
     </dependencies>
 </project>

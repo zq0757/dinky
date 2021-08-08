@@ -5,8 +5,6 @@ import com.dlink.dto.SessionDTO;
 import com.dlink.dto.StudioCADTO;
 import com.dlink.dto.StudioDDLDTO;
 import com.dlink.dto.StudioExecuteDTO;
-import com.dlink.job.JobResult;
-import com.dlink.result.IResult;
 import com.dlink.service.StudioService;
 import com.fasterxml.jackson.databind.JsonNode;
 import lombok.extern.slf4j.Slf4j;
@@ -35,8 +33,7 @@ public class StudioController {
      */
     @PostMapping("/executeSql")
     public Result executeSql(@RequestBody StudioExecuteDTO studioExecuteDTO)  {
-        JobResult jobResult = studioService.executeSql(studioExecuteDTO);
-        return Result.succeed(jobResult,"执行成功");
+        return Result.succeed(studioService.executeSql(studioExecuteDTO),"执行成功");
     }
 
     /**
@@ -52,8 +49,7 @@ public class StudioController {
      */
     @PostMapping("/executeDDL")
     public Result executeDDL(@RequestBody StudioDDLDTO studioDDLDTO)  {
-        IResult result = studioService.executeDDL(studioDDLDTO);
-        return Result.succeed(result,"执行成功");
+        return Result.succeed(studioService.executeDDL(studioDDLDTO),"执行成功");
     }
 
     /**

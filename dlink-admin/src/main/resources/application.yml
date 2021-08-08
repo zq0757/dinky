@@ -34,3 +34,8 @@ dlink:
   login:
     username: admin
     password: admin
+  clients:
+    - version: 1.12
+      url: 127.0.0.1:20112
+    - version: 1.13
+      url: 127.0.0.1:20113

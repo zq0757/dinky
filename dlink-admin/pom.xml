@@ -118,7 +118,10 @@
             <groupId>com.dlink</groupId>
             <artifactId>dlink-common</artifactId>
         </dependency>
-
+        <dependency>
+            <groupId>com.dlink</groupId>
+            <artifactId>dlink-client-core</artifactId>
+        </dependency>
         <dependency>
             <groupId>com.dlink</groupId>
             <artifactId>dlink-metadata-base</artifactId>

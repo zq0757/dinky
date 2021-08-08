@@ -24,4 +24,6 @@ public interface ClusterService extends ISuperService<Cluster> {
     String buildLocalEnvironmentAddress();
 
     List<Cluster> listEnabledAll();
+
+    String getClusterVersion(String address);
 }

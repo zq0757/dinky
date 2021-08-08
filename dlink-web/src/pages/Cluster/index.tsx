@@ -149,6 +149,13 @@ const ClusterTableList: React.FC<{}> = (props: any) => {
       hideInForm: true,
       hideInSearch: true,
       hideInTable: true,
+    },{
+      title: '版本',
+      sorter: true,
+      dataIndex: 'version',
+      hideInForm: true,
+      hideInSearch: true,
+      hideInTable: true,
     },
     {
       title: '状态',

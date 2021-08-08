@@ -32,6 +32,7 @@ public class ClusterController {
     @PutMapping
     public Result saveOrUpdate(@RequestBody Cluster cluster) throws Exception {
         checkHealth(cluster);
+        cluster.setVersion(clusterService.getClusterVersion(cluster.getJobManagerHost()));
         if(clusterService.saveOrUpdate(cluster)){
             return Result.succeed("新增成功");
         }else {

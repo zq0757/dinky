@@ -1,6 +1,5 @@
 package com.dlink.dto;
 
-import com.dlink.session.SessionConfig;
 import lombok.Getter;
 import lombok.Setter;
 

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:dubbo="http://dubbo.apache.org/schema/dubbo"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.3.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.3.xsd
+		http://dubbo.apache.org/schema/dubbo http://dubbo.apache.org/schema/dubbo/dubbo.xsd">
+
+    <!-- 声明application -->
+    <dubbo:application name="flinkServer"></dubbo:application>
+    <!-- 注册服务 -->
+    <!-- 	<dubbo:registry address="zookeeper://127.0.0.1:2181"></dubbo:registry> -->
+    <!-- 注册协议 -->
+    <dubbo:protocol name="dubbo" port="20112" accepts="20"></dubbo:protocol>
+    <!-- 实现服务 -->
+    <bean id="flinkServiceImpl"   class="com.dlink.rpc.FlinkServiceImpl"/>
+    <!-- 声明要暴露的服务接口 -->
+    <dubbo:service interface="com.dlink.rpc.FlinkService" ref="flinkServiceImpl"  id ="flinkService"  registry="N/A" version="1.12" ></dubbo:service>
+</beans>

@@ -8,15 +8,20 @@ package com.dlink.constant;
  **/
 public interface FlinkRestAPIConstant {
     /**
+     * config
+     */
+    String CONFIG = "config";
+    /**
      * jobs
      */
     String JOBS = "jobs/";
     /**
-     * JOBSLIST
+     * joblist
      */
     String JOBSLIST = "jobs/overview";
     /**
      * cancel
      */
     String CANCEL = "/yarn-cancel";
+
 }

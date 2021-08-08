@@ -16,6 +16,9 @@ import com.dlink.parser.SqlType;
 import com.dlink.result.IResult;
 import com.dlink.result.SelectResult;
 import com.dlink.result.SqlExplainResult;
+import com.dlink.rpc.FlinkService;
+import com.dlink.rpc.RPCManager;
+import com.dlink.rpc.RPCProperties;
 import com.dlink.service.ClusterService;
 import com.dlink.service.StudioService;
 import com.dlink.session.SessionConfig;
@@ -40,35 +43,34 @@ public class StudioServiceImpl implements StudioService {
 
     @Autowired
     private ClusterService clusterService;
+    @Autowired
+    private RPCProperties rpcProperties;
+
+    private FlinkService buildFlinkService(JobConfig config){
+        if(!config.isUseSession()) {
+            config.setAddress(clusterService.buildEnvironmentAddress(config.isUseRemote(), config.getClusterId()));
+        }
+        Cluster cluster = clusterService.getById(config.getClusterId());
+        String clientUrl = rpcProperties.getFlinkClientUrl(cluster.getVersion());
+        return RPCManager.createServer(clientUrl, cluster.getVersion());
+    }
 
     @Override
     public JobResult executeSql(StudioExecuteDTO studioExecuteDTO) {
         JobConfig config = studioExecuteDTO.getJobConfig();
-        if(!config.isUseSession()) {
-            config.setAddress(clusterService.buildEnvironmentAddress(config.isUseRemote(), studioExecuteDTO.getClusterId()));
-        }
-        JobManager jobManager = JobManager.build(config);
-        return jobManager.executeSql(studioExecuteDTO.getStatement());
+        return buildFlinkService(config).executeSql(config,studioExecuteDTO.getStatement());
     }
 
     @Override
     public IResult executeDDL(StudioDDLDTO studioDDLDTO) {
         JobConfig config = studioDDLDTO.getJobConfig();
-        if(!config.isUseSession()) {
-            config.setAddress(clusterService.buildEnvironmentAddress(config.isUseRemote(), studioDDLDTO.getClusterId()));
-        }
-        JobManager jobManager = JobManager.build(config);
-        return jobManager.executeDDL(studioDDLDTO.getStatement());
+        return buildFlinkService(config).executeDDL(config,studioDDLDTO.getStatement());
     }
 
     @Override
     public List<SqlExplainResult> explainSql(StudioExecuteDTO studioExecuteDTO) {
         JobConfig config = studioExecuteDTO.getJobConfig();
-        if(!config.isUseSession()) {
-            config.setAddress(clusterService.buildEnvironmentAddress(config.isUseRemote(), studioExecuteDTO.getClusterId()));
-        }
-        JobManager jobManager = JobManager.build(config);
-        return jobManager.explainSql(studioExecuteDTO.getStatement());
+        return buildFlinkService(config).explainSql(config,studioExecuteDTO.getStatement());
     }
 
     @Override
