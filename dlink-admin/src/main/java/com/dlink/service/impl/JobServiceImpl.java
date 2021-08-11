@@ -96,6 +96,18 @@ public class JobServiceImpl implements JobService {
     }
 
     @Override
+    public SessionInfo getSession(String session) {
+        Map<String, FlinkService> servers = RPCManager.listServer();
+        for(Map.Entry<String,FlinkService> entry: servers.entrySet()){
+            SessionInfo sessionInfo = entry.getValue().getSession(session);
+            if(Asserts.isNotNull(sessionInfo)){
+                return sessionInfo;
+            }
+        }
+        return null;
+    }
+
+    @Override
     public boolean clearSession(String session) {
         List<SessionInfo> sessionInfos = listAllSession();
         for (int i = 0; i < sessionInfos.size(); i++) {

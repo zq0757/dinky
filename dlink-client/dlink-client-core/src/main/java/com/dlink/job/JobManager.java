@@ -313,6 +313,10 @@ public class JobManager extends RunTime {
         }
     }
 
+    public static SessionInfo getSession(String session) {
+        return SessionPool.getInfo(session);
+    }
+
 
     public List<SqlExplainResult> explainSql(String statement){
         Explainer explainer = Explainer.build(executor);

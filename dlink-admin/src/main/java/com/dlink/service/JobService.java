@@ -33,5 +33,7 @@ public interface JobService {
 
     List<SessionInfo> listAllSession();
 
+    SessionInfo getSession(String session);
+
     boolean clearSession(String session);
 }

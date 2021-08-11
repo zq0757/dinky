@@ -34,5 +34,7 @@ public interface FlinkService {
 
     List<SessionInfo> listAllSession();
 
+    SessionInfo getSession(String session);
+
     boolean clearSession(String session);
 }

@@ -62,6 +62,11 @@ public class FlinkServiceImpl implements FlinkService {
     }
 
     @Override
+    public SessionInfo getSession(String session) {
+        return JobManager.getSession(session);
+    }
+
+    @Override
     public boolean clearSession(String session) {
         return JobManager.clearSession(session);
     }

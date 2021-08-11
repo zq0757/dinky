@@ -57,6 +57,9 @@ public class StudioServiceImpl implements StudioService {
     @Override
     public IResult executeDDL(StudioDDLDTO studioDDLDTO) {
         JobConfig config = studioDDLDTO.getJobConfig();
+        SessionInfo sessionInfo = jobService.getSession(config.getSession());
+        Asserts.checkNotNull(sessionInfo,"该会话不存在");
+        config.setClusterId(sessionInfo.getSessionConfig().getClusterId());
         return jobService.executeDDL(config,studioDDLDTO.getStatement());
     }
 
