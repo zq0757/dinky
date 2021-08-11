@@ -3,6 +3,7 @@ package com.dlink.session;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 
 /**
@@ -13,7 +14,8 @@ import java.time.LocalDateTime;
  */
 @Setter
 @Getter
-public class SessionInfo {
+public class SessionInfo implements Serializable {
+    private static final long serialVersionUID = 4888199459594721135L;
     private String session;
     private SessionConfig sessionConfig;
     private String createUser;

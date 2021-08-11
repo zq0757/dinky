@@ -6,6 +6,8 @@ import com.dlink.job.JobResult;
 import com.dlink.result.IResult;
 import com.dlink.result.SelectResult;
 import com.dlink.result.SqlExplainResult;
+import com.dlink.session.SessionConfig;
+import com.dlink.session.SessionInfo;
 
 import java.util.List;
 
@@ -42,5 +44,25 @@ public class FlinkServiceImpl implements FlinkService {
     @Override
     public SelectResult getJobData(String jobId) {
         return JobManager.getJobData(jobId);
+    }
+
+    @Override
+    public SessionInfo createSession(String session, SessionConfig sessionConfig, String createUser) {
+        return JobManager.createSession(session,sessionConfig,createUser);
+    }
+
+    @Override
+    public List<SessionInfo> listSession(String createUser) {
+        return JobManager.listSession(createUser);
+    }
+
+    @Override
+    public List<SessionInfo> listAllSession() {
+        return JobManager.listSession();
+    }
+
+    @Override
+    public boolean clearSession(String session) {
+        return JobManager.clearSession(session);
     }
 }

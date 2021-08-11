@@ -1,5 +1,6 @@
 package com.dlink.result;
 
+import java.io.Serializable;
 import java.util.Date;
 
 /**
@@ -8,7 +9,8 @@ import java.util.Date;
  * @author  wenmo
  * @since  2021/6/7 22:06
  **/
-public class SqlExplainResult {
+public class SqlExplainResult implements Serializable {
+    private static final long serialVersionUID = -2015684735736860425L;
     private Integer index;
     private String type;
     private String sql;

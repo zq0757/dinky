@@ -28,10 +28,11 @@ export async function explainSql(params: StudioParam) {
   });
 }
 
-export async function getJobData(jobId:string) {
+export async function getJobData(clusterId:number,jobId:string) {
   return request<API.Result>('/api/studio/getJobData', {
-    method: 'GET',
-    params: {
+    method: 'POST',
+    data: {
+      clusterId,
       jobId,
     },
   });

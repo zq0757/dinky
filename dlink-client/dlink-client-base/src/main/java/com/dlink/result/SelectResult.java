@@ -3,6 +3,7 @@ package com.dlink.result;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
@@ -16,8 +17,9 @@ import java.util.Set;
  **/
 @Setter
 @Getter
-public class SelectResult extends AbstractResult implements IResult{
+public class SelectResult extends AbstractResult implements IResult,Serializable {
 
+    private static final long serialVersionUID = -6490114927882186226L;
     private String jobID;
     private List<Map<String,Object>> rowData;
     private Integer total;

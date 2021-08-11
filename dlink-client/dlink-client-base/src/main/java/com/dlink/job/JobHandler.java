@@ -1,7 +1,5 @@
 package com.dlink.job;
 
-import com.dlink.exception.JobException;
-
 import java.util.ServiceLoader;
 
 /**

@@ -14,7 +14,7 @@ public class Server {
         // 加载配置文件
         ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext("classpath:dubbo_server.xml");
         ctx.start();
-        System.err.println("启动了.....");
+//        System.err.println("启动了.....");
         System.in.read();
     }
 }

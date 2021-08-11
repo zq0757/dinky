@@ -59,6 +59,14 @@ public class SessionPool {
         return executorList;
     }
 
+    public static List<SessionInfo> listAll(){
+        List<SessionInfo> sessionInfos = new ArrayList<>();
+        for (ExecutorEntity item : executorList) {
+            sessionInfos.add(SessionInfo.build(item));
+        }
+        return sessionInfos;
+    }
+
     public static List<SessionInfo> filter(String createUser){
         List<SessionInfo> sessionInfos = new ArrayList<>();
         for (ExecutorEntity item : executorList) {

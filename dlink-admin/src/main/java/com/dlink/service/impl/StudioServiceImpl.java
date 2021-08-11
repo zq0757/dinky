@@ -4,6 +4,7 @@ import com.dlink.api.FlinkAPI;
 import com.dlink.assertion.Asserts;
 import com.dlink.dto.SessionDTO;
 import com.dlink.dto.StudioDDLDTO;
+import com.dlink.dto.StudioDataDTO;
 import com.dlink.dto.StudioExecuteDTO;
 import com.dlink.explainer.ca.CABuilder;
 import com.dlink.explainer.ca.ColumnCANode;
@@ -20,6 +21,7 @@ import com.dlink.rpc.FlinkService;
 import com.dlink.rpc.RPCManager;
 import com.dlink.rpc.RPCProperties;
 import com.dlink.service.ClusterService;
+import com.dlink.service.JobService;
 import com.dlink.service.StudioService;
 import com.dlink.session.SessionConfig;
 import com.dlink.session.SessionInfo;
@@ -44,38 +46,29 @@ public class StudioServiceImpl implements StudioService {
     @Autowired
     private ClusterService clusterService;
     @Autowired
-    private RPCProperties rpcProperties;
-
-    private FlinkService buildFlinkService(JobConfig config){
-        if(!config.isUseSession()) {
-            config.setAddress(clusterService.buildEnvironmentAddress(config.isUseRemote(), config.getClusterId()));
-        }
-        Cluster cluster = clusterService.getById(config.getClusterId());
-        String clientUrl = rpcProperties.getFlinkClientUrl(cluster.getVersion());
-        return RPCManager.createServer(clientUrl, cluster.getVersion());
-    }
+    private JobService jobService;
 
     @Override
     public JobResult executeSql(StudioExecuteDTO studioExecuteDTO) {
         JobConfig config = studioExecuteDTO.getJobConfig();
-        return buildFlinkService(config).executeSql(config,studioExecuteDTO.getStatement());
+        return jobService.executeSql(config,studioExecuteDTO.getStatement());
     }
 
     @Override
     public IResult executeDDL(StudioDDLDTO studioDDLDTO) {
         JobConfig config = studioDDLDTO.getJobConfig();
-        return buildFlinkService(config).executeDDL(config,studioDDLDTO.getStatement());
+        return jobService.executeDDL(config,studioDDLDTO.getStatement());
     }
 
     @Override
     public List<SqlExplainResult> explainSql(StudioExecuteDTO studioExecuteDTO) {
         JobConfig config = studioExecuteDTO.getJobConfig();
-        return buildFlinkService(config).explainSql(config,studioExecuteDTO.getStatement());
+        return jobService.explainSql(config,studioExecuteDTO.getStatement());
     }
 
     @Override
-    public SelectResult getJobData(String jobId) {
-        return JobManager.getJobData(jobId);
+    public SelectResult getJobData(StudioDataDTO studioDataDTO) {
+        return jobService.getJobData(studioDataDTO.getClusterId(),studioDataDTO.getJobId());
     }
 
     @Override
@@ -86,28 +79,24 @@ public class StudioServiceImpl implements StudioService {
                     sessionDTO.getType(), true,
                     cluster.getId(), cluster.getAlias(),
                     clusterService.buildEnvironmentAddress(true, sessionDTO.getClusterId()));
-            return JobManager.createSession(sessionDTO.getSession(), sessionConfig, createUser);
+            return jobService.createSession(sessionDTO.getSession(), sessionConfig, createUser);
         }else{
             SessionConfig sessionConfig = SessionConfig.build(
                     sessionDTO.getType(), false,
                     null, null,
                     clusterService.buildEnvironmentAddress(false, null));
-            return JobManager.createSession(sessionDTO.getSession(), sessionConfig, createUser);
+            return jobService.createSession(sessionDTO.getSession(), sessionConfig, createUser);
         }
     }
 
     @Override
     public boolean clearSession(String session) {
-        if(SessionPool.remove(session)>0){
-            return true;
-        }else{
-            return false;
-        }
+        return jobService.clearSession(session);
     }
 
     @Override
     public List<SessionInfo> listSession(String createUser) {
-        return JobManager.listSession(createUser);
+        return jobService.listSession(createUser);
     }
 
     @Override

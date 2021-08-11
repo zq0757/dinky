@@ -2,6 +2,7 @@ package com.dlink.service;
 
 import com.dlink.dto.SessionDTO;
 import com.dlink.dto.StudioDDLDTO;
+import com.dlink.dto.StudioDataDTO;
 import com.dlink.dto.StudioExecuteDTO;
 import com.dlink.explainer.ca.ColumnCANode;
 import com.dlink.explainer.ca.TableCANode;
@@ -28,7 +29,7 @@ public interface StudioService {
 
     List<SqlExplainResult> explainSql(StudioExecuteDTO studioExecuteDTO);
 
-    SelectResult getJobData(String jobId);
+    SelectResult getJobData(StudioDataDTO studioDataDTO);
 
     SessionInfo createSession(SessionDTO sessionDTO, String createUser);
 

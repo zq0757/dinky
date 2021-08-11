@@ -301,6 +301,19 @@ public class JobManager extends RunTime {
         return SessionPool.filter(createUser);
     }
 
+    public static List<SessionInfo> listSession(){
+        return SessionPool.listAll();
+    }
+
+    public static boolean clearSession(String session) {
+        if(SessionPool.remove(session)>0){
+            return true;
+        }else{
+            return false;
+        }
+    }
+
+
     public List<SqlExplainResult> explainSql(String statement){
         Explainer explainer = Explainer.build(executor);
         return explainer.explainSqlResult(statement);

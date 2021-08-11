@@ -97,7 +97,7 @@ const StudioTable = (props:any) => {
   };
 
   const showDetail=()=>{
-    showJobData(current.console.result.jobId,dispatch)
+    showJobData(current.console.result.jobConfig.clusterId,current.console.result.jobId,dispatch)
   };
   return (
     <div style={{width: '100%'}}>

@@ -67,7 +67,7 @@ const StudioHistory = (props: any) => {
     setType(type);
     setConfig(JSON.parse(row.config));
     if(type==3){
-      showJobData(row.jobId,dispatch)
+      showJobData(row.clusterId,row.jobId,dispatch)
     }
   };
 

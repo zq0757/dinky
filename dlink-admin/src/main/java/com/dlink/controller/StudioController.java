@@ -1,10 +1,7 @@
 package com.dlink.controller;
 
 import com.dlink.common.result.Result;
-import com.dlink.dto.SessionDTO;
-import com.dlink.dto.StudioCADTO;
-import com.dlink.dto.StudioDDLDTO;
-import com.dlink.dto.StudioExecuteDTO;
+import com.dlink.dto.*;
 import com.dlink.service.StudioService;
 import com.fasterxml.jackson.databind.JsonNode;
 import lombok.extern.slf4j.Slf4j;
@@ -55,9 +52,9 @@ public class StudioController {
     /**
      * 根据jobId获取数据
      */
-    @GetMapping("/getJobData")
-    public Result getJobData(@RequestParam String jobId)  {
-        return Result.succeed(studioService.getJobData(jobId),"获取成功");
+    @PostMapping("/getJobData")
+    public Result getJobData(@RequestBody StudioDataDTO studioDataDTO)  {
+        return Result.succeed(studioService.getJobData(studioDataDTO),"获取成功");
     }
 
     /**

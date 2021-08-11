@@ -1,5 +1,6 @@
-package com.dlink.rpc;
+package com.dlink.service;
 
+import com.dlink.dto.SessionDTO;
 import com.dlink.job.JobConfig;
 import com.dlink.job.JobResult;
 import com.dlink.result.IResult;
@@ -11,22 +12,20 @@ import com.dlink.session.SessionInfo;
 import java.util.List;
 
 /**
- * FlinkService
+ * JobService
  *
  * @author wenmo
- * @since 2021/8/5 23:53
+ * @since 2021/8/11 22:02
  */
-public interface FlinkService {
+public interface JobService {
 
-    String getVersion();
+    JobResult executeSql(JobConfig config,String statement);
 
-    JobResult executeSql(JobConfig config, String statement);
+    IResult executeDDL(JobConfig config,String statement);
 
-    IResult executeDDL(JobConfig config, String statement);
+    List<SqlExplainResult> explainSql(JobConfig config,String statement);
 
-    List<SqlExplainResult> explainSql(JobConfig config, String statement);
-
-    SelectResult getJobData(String jobId);
+    SelectResult getJobData(Integer clusterId,String jobId);
 
     SessionInfo createSession(String session, SessionConfig sessionConfig, String createUser);
 

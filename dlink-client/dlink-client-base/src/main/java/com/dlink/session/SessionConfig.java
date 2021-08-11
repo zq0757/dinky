@@ -4,6 +4,8 @@ import com.dlink.executor.ExecutorSetting;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.io.Serializable;
+
 /**
  * SessionConfig
  *
@@ -12,7 +14,8 @@ import lombok.Setter;
  */
 @Getter
 @Setter
-public class SessionConfig {
+public class SessionConfig implements Serializable {
+    private static final long serialVersionUID = 1103012666228888548L;
     private SessionType type;
     private boolean useRemote;
     private Integer clusterId;
