@@ -1,4 +1,5 @@
 /*
+ *
  *  Licensed to the Apache Software Foundation (ASF) under one or more
  *  contributor license agreements.  See the NOTICE file distributed with
  *  this work for additional information regarding copyright ownership.
@@ -18,78 +19,82 @@
 
 
 import React, {useState} from 'react';
-import {Form, Modal} from 'antd';
+import {Button, Form, Input, Modal, Select, Tag} from 'antd';
 import {l} from "@/utils/intl";
-import {ProForm, ProFormText, ProFormTextArea} from "@ant-design/pro-components";
 import {FORM_LAYOUT_PUBLIC, NORMAL_MODAL_OPTIONS} from "@/services/constants";
+import {ProForm, ProFormText, ProFormTextArea} from "@ant-design/pro-components";
+
 
 export type TenantFormProps = {
   onCancel: (flag?: boolean) => void;
-  onSubmit: (values: Partial<UserBaseInfo.Tenant>) => void;
+  onSubmit: (values: Partial<UserBaseInfo.Role>) => void;
   modalVisible: boolean;
-  values: Partial<UserBaseInfo.Tenant>;
+  values: Partial<UserBaseInfo.Role>;
 };
 
+const RoleForm: React.FC<TenantFormProps> = (props) => {
 
-const TenantForm: React.FC<TenantFormProps> = (props) => {
 
   const [form] = Form.useForm();
-  /**
-   * form values
-   */
-  const [formVals, setFormVals] = useState<Partial<UserBaseInfo.Tenant>>({
-    id: props.values.id,
-    tenantCode: props.values.tenantCode,
-    isDelete: props.values.isDelete,
-    note: props.values.note,
-    createTime: props.values.createTime,
-    updateTime: props.values.updateTime,
+  const [formVals, setFormVals] = useState<Partial<UserBaseInfo.Role>>({
+    id: props.values?.id,
+    tenantId: props.values?.tenantId,
+    roleCode: props.values?.roleCode,
+    roleName: props.values?.roleName,
+    isDelete: props.values?.isDelete,
+    note: props.values?.note,
+    createTime: props.values?.createTime,
+    updateTime: props.values?.updateTime,
   });
 
-  /**
-   * props
-   */
   const {
     onSubmit: handleSubmit,
     onCancel: handleModalVisible,
     modalVisible,
   } = props;
 
+
   /**
-   * submit
+   * submit form
    */
   const submitForm = async () => {
     const fieldsValue = await form.validateFields();
-    fieldsValue.id = formVals.id;
+    // fieldsValue.id = formVals.id;
     setFormVals({...formVals, ...fieldsValue});
     handleSubmit({...formVals, ...fieldsValue});
-    form.resetFields();
   };
 
   /**
-   * render form
+   * construct role form
    * @constructor
    */
-  const TenantFormRender = () => {
+  const ConstructRoleForm = () => {
     return (
       <>
         <ProFormText
-          name="tenantCode"
-          label={l('tenant.TenantCode')}
-          placeholder={l('tenant.EnterTenantCode')}
-          rules={[{required: true, message: l('tenant.EnterTenantCode')}]}
+          name="roleCode"
+          label={l('role.roleCode')}
+          placeholder={l('role.EnterRoleCode')}
+          rules={[{required: true, message: l('role.EnterRoleCode')}]}
         />
+
+        <ProFormText
+          name="roleName"
+          label={l('role.roleName')}
+          placeholder={l('role.EnterRoleName')}
+          rules={[{required: true, message: l('role.EnterRoleName')}]}
+        />
+
         <ProFormTextArea
           name="note"
-          allowClear
           label={l('global.table.note')}
-          placeholder={l('tenant.EnterTenantNote')}
-          rules={[{required: true, message: l('tenant.EnterTenantNote')}]}
+          placeholder={l('role.EnterNote')}
+          allowClear
         />
+
       </>
     );
   };
-
 
   /**
    * render
@@ -97,22 +102,21 @@ const TenantForm: React.FC<TenantFormProps> = (props) => {
   return (
     <Modal
       {...NORMAL_MODAL_OPTIONS}
-      title={formVals.id ? l('tenant.update') : l('tenant.create')}
+      title={formVals.id ? l('role.update') : l('role.create')}
       open={modalVisible}
-      onOk={submitForm}
-      onCancel={() => handleModalVisible()}
+      onCancel={() => handleModalVisible(false)}
+      onOk={() => submitForm()}
     >
       <ProForm
         {...FORM_LAYOUT_PUBLIC}
         form={form}
         initialValues={formVals}
         submitter={false}
-        layout={"horizontal"}
+        layout={'horizontal'}
       >
-        {TenantFormRender()}
+        {ConstructRoleForm()}
       </ProForm>
     </Modal>
   );
 };
-
-export default TenantForm;
+export default RoleForm;

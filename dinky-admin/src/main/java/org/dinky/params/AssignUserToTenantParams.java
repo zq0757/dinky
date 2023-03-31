@@ -17,25 +17,15 @@
  *
  */
 
-package org.dinky.service.impl;
-
-import org.dinky.db.service.impl.SuperServiceImpl;
-import org.dinky.mapper.RoleNamespaceMapper;
-import org.dinky.model.RoleNamespace;
-import org.dinky.service.RoleNamespaceService;
+package org.dinky.params;
 
 import java.util.List;
 
-import org.springframework.stereotype.Service;
+import lombok.Data;
 
-/** role namespace service impl , it's will be deprecated in the future */
-@Service
-@Deprecated
-public class RoleNamespaceServiceImpl extends SuperServiceImpl<RoleNamespaceMapper, RoleNamespace>
-        implements RoleNamespaceService {
-
-    @Override
-    public boolean deleteByRoleIds(List<Integer> roleIds) {
-        return baseMapper.deleteByRoleIds(roleIds) > 0;
-    }
+/** assign role params */
+@Data
+public class AssignUserToTenantParams {
+    Integer tenantId;
+    List<Integer> userIds;
 }
