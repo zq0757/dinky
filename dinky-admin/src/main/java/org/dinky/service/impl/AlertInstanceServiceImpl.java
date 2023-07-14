@@ -24,11 +24,13 @@ import org.dinky.alert.AlertConfig;
 import org.dinky.alert.AlertMsg;
 import org.dinky.alert.AlertResult;
 import org.dinky.alert.ShowType;
-import org.dinky.common.result.Result;
-import org.dinky.db.service.impl.SuperServiceImpl;
+import org.dinky.data.constant.BaseConstant;
+import org.dinky.data.enums.Status;
+import org.dinky.data.model.AlertGroup;
+import org.dinky.data.model.AlertInstance;
+import org.dinky.data.result.Result;
 import org.dinky.mapper.AlertInstanceMapper;
-import org.dinky.model.AlertGroup;
-import org.dinky.model.AlertInstance;
+import org.dinky.mybatis.service.impl.SuperServiceImpl;
 import org.dinky.service.AlertGroupService;
 import org.dinky.service.AlertInstanceService;
 import org.dinky.utils.JSONUtil;
@@ -37,10 +39,9 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 
-import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -51,20 +52,15 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import cn.hutool.core.util.StrUtil;
 import lombok.RequiredArgsConstructor;
 
-/**
- * AlertInstanceServiceImpl
- *
- * @author wenmo
- * @since 2022/2/24 19:53
- */
+/** AlertInstanceServiceImpl */
 @Service
 @RequiredArgsConstructor
 public class AlertInstanceServiceImpl extends SuperServiceImpl<AlertInstanceMapper, AlertInstance>
@@ -74,7 +70,7 @@ public class AlertInstanceServiceImpl extends SuperServiceImpl<AlertInstanceMapp
 
     @Override
     public List<AlertInstance> listEnabledAll() {
-        return list(new QueryWrapper<AlertInstance>().eq("enabled", 1));
+        return list(new LambdaQueryWrapper<AlertInstance>().eq(AlertInstance::getEnabled, 1));
     }
 
     @Override
@@ -85,37 +81,61 @@ public class AlertInstanceServiceImpl extends SuperServiceImpl<AlertInstanceMapp
                         alertInstance.getType(),
                         JSONUtil.toMap(alertInstance.getParams()));
         Alert alert = Alert.buildTest(alertConfig);
+
+        AlertMsg alertMsg = getAlertMsg(alertInstance);
+        String title =
+                Status.TEST_MSG_JOB_NAME_TITLE.getMsg()
+                        + "【"
+                        + alertMsg.getJobName()
+                        + "】："
+                        + alertMsg.getJobStatus()
+                        + "!";
+        return alert.send(title, alertMsg.toString());
+    }
+
+    private static AlertMsg getAlertMsg(AlertInstance alertInstance) {
         String currentDateTime =
-                new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
-                        .format(Calendar.getInstance().getTime());
+                LocalDateTime.now()
+                        .format(DateTimeFormatter.ofPattern(BaseConstant.YYYY_MM_DD_HH_MM_SS));
+
         String uuid = UUID.randomUUID().toString();
 
-        AlertMsg alertMsg = new AlertMsg();
-        alertMsg.setAlertType("实时告警监控");
-        alertMsg.setAlertTime(currentDateTime);
-        alertMsg.setJobID(uuid);
-        alertMsg.setJobName("测试任务");
-        alertMsg.setJobType("SQL");
-        alertMsg.setJobStatus("FAILED");
-        alertMsg.setJobStartTime(currentDateTime);
-        alertMsg.setJobEndTime(currentDateTime);
-        alertMsg.setJobDuration("1 Seconds");
+        AlertMsg.AlertMsgBuilder alertMsgBuilder =
+                AlertMsg.builder()
+                        .alertType(Status.TEST_MSG_TITLE.getMsg())
+                        .alertTime(currentDateTime)
+                        .jobID(uuid)
+                        .jobName(Status.TEST_MSG_JOB_NAME.getMsg())
+                        .jobType("SQL")
+                        .jobStatus("FAILED")
+                        .jobStartTime(currentDateTime)
+                        .jobEndTime(currentDateTime)
+                        .jobDuration("1 Seconds");
+
         String linkUrl = "http://cdh1:8081/#/job/" + uuid + "/overview";
         String exceptionUrl = "http://cdh1:8081/#/job/" + uuid + "/exceptions";
 
         Map<String, String> map = JSONUtil.toMap(alertInstance.getParams());
-        if (map.get("msgtype").equals(ShowType.MARKDOWN.getValue())) {
-            alertMsg.setLinkUrl("[跳转至该任务的 FlinkWeb](" + linkUrl + ")");
-            alertMsg.setExceptionUrl("[点击查看该任务的异常日志](" + exceptionUrl + ")");
+        if (!alertInstance.getType().equals("Sms")) {
+            if (map.get("msgtype").equals(ShowType.MARKDOWN.getValue())) {
+                alertMsgBuilder.linkUrl(
+                        "[" + Status.TEST_MSG_JOB_URL.getMsg() + " FlinkWeb](" + linkUrl + ")");
+                alertMsgBuilder.exceptionUrl(
+                        "[" + Status.TEST_MSG_JOB_LOG_URL.getMsg() + "](" + exceptionUrl + ")");
+            } else {
+                alertMsgBuilder.linkUrl(linkUrl);
+                alertMsgBuilder.exceptionUrl(exceptionUrl);
+            }
         } else {
-            alertMsg.setLinkUrl(linkUrl);
-            alertMsg.setExceptionUrl(exceptionUrl);
+            alertMsgBuilder.linkUrl(linkUrl);
+            alertMsgBuilder.exceptionUrl(exceptionUrl);
         }
-        String title = "任务【" + alertMsg.getJobName() + "】：" + alertMsg.getJobStatus() + "!";
-        return alert.send(title, alertMsg.toString());
+        AlertMsg alertMsg = alertMsgBuilder.build();
+        return alertMsg;
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public Result<Void> deleteAlertInstance(JsonNode para) {
         if (para.size() > 0) {
             final Map<Integer, Set<Integer>> alertGroupInformation = getAlertGroupInformation();
@@ -136,6 +156,32 @@ public class AlertInstanceServiceImpl extends SuperServiceImpl<AlertInstanceMapp
         } else {
             return Result.failed("请选择要删除的记录");
         }
+    }
+
+    /**
+     * delete alert instance
+     *
+     * @param id {@link Integer}
+     * @return {@link Result<Void>}
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Boolean deleteAlertInstance(Integer id) {
+        final Map<Integer, Set<Integer>> alertGroupInformation = getAlertGroupInformation();
+        if (!this.removeById(id)) {
+            return false;
+        }
+        alertGroupInformation.remove(id);
+        writeBackGroupInformation(alertGroupInformation);
+        return true;
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Boolean enable(Integer id) {
+        AlertInstance alertInstance = getById(id);
+        alertInstance.setEnabled(!alertInstance.getEnabled());
+        return updateById(alertInstance);
     }
 
     private void writeBackGroupInformation(Map<Integer, Set<Integer>> alertGroupInformation) {
@@ -172,7 +218,6 @@ public class AlertInstanceServiceImpl extends SuperServiceImpl<AlertInstanceMapp
                                     final String groupIds = result.get(groupId);
                                     alertGroup.setAlertInstanceIds(
                                             groupIds == null ? "" : groupIds);
-                                    alertGroup.setUpdateTime(now);
                                     return alertGroup;
                                 })
                         .collect(Collectors.toList());

@@ -19,15 +19,14 @@
 
 package org.dinky.mapper;
 
-import org.dinky.db.mapper.SuperMapper;
-import org.dinky.model.User;
+import org.dinky.data.model.User;
+import org.dinky.mybatis.mapper.SuperMapper;
 
 import org.apache.ibatis.annotations.Mapper;
 
 /**
  * UserMapper
  *
- * @author wenmo
  * @since 2021/11/28 13:36
  */
 @Mapper

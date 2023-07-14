@@ -19,13 +19,12 @@
 
 package org.dinky.service;
 
-import org.dinky.db.service.ISuperService;
-import org.dinky.model.JobHistory;
+import org.dinky.data.model.JobHistory;
+import org.dinky.mybatis.service.ISuperService;
 
 /**
  * JobHistoryService
  *
- * @author wenmo
  * @since 2022/3/2 19:55
  */
 public interface JobHistoryService extends ISuperService<JobHistory> {

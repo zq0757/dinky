@@ -42,9 +42,15 @@ export default [
   },
   {
     path: '/',
-    redirect: '/datastudio',
+    redirect: '/home',
   },
-
+  {
+    path: '/home',
+    name: 'home',
+    icon: 'HomeOutlined',
+    footerRender: false,
+    component: './Home',
+  },
   {
     path: '/datastudio',
     name: 'datastudio',
@@ -56,42 +62,32 @@ export default [
     path: '/devops',
     name: 'devops',
     icon: 'ControlOutlined',
+    footerRender: false,
     routes: [
       {
         path: '/devops',
-        redirect: '/devops/job',
+        redirect: '/devops/joblist',
       },
       {
-        path: '/devops/job',
+        path: '/devops/joblist',
         name: 'job',
         hideInMenu: true,
-        // component: './DevOps/JobInfo',
+        component: './DevOps',
       },
+      {
+        path: '/devops/job-detail',
+        name: 'job-detail',
+        hideInMenu: true,
+        component: './DevOps/JobDetail',
+      },
+
     ],
   },
-  //todo: data center will be merge to the registration center's datasource module , it will be removed in the future
-
-  // {
-  //   path: '/datacenter',
-  //   name: 'datacenter',
-  //   icon: 'DatabaseOutlined',
-  //   routes: [
-  //     {
-  //       path: '/datacenter',
-  //       redirect: '/datacenter/metadata',
-  //     },
-  //     {
-  //       path: '/datacenter/metadata',
-  //       name: 'metadata',
-  //       icon: 'DatabaseOutlined',
-  //       // component: './DataCenter/MetaData',
-  //     },
-  //   ],
-  // },
   {
     path: '/registration',
     name: 'registration',
     icon: 'AppstoreOutlined',
+    footerRender: false,
     routes: [
       {
         path: '/registration',
@@ -105,26 +101,25 @@ export default [
           {
             path: '/registration/cluster/instance',
             name: 'cluster-instance',
-            // component: './RegistrationCenter/ClusterManage/Cluster',
+            component: './RegCenter/Cluster/Instance',
           },
           {
             path: '/registration/cluster/config',
             name: 'cluster-config',
-            // component: './RegistrationCenter/ClusterManage/ClusterConfiguration',
+            component: './RegCenter/Cluster/Configuration',
           },
         ],
-      },
-      {
-        path: '/registration/jar',
-        name: 'jar',
-        icon: 'FileZipOutlined',
-        // component: './RegistrationCenter/Jar',
       },
       {
         path: '/registration/database',
         name: 'database',
         icon: 'DatabaseOutlined',
-        // component: './RegistrationCenter/DataBase',
+        component: './RegCenter/DataSource',
+        routes: [
+          {
+            path: '/registration/database/detail/:id',
+          }
+        ]
       },
       {
         path: '/registration/alert',
@@ -134,12 +129,12 @@ export default [
           {
             path: '/registration/alert/instance',
             name: 'instance',
-            // component: './RegistrationCenter/AlertManage/AlertInstance',
+            component: './RegCenter/Alert/AlertInstance',
           },
           {
             path: '/registration/alert/group',
             name: 'group',
-            // component: './RegistrationCenter/AlertManage/AlertGroup',
+            component: './RegCenter/Alert/AlertGroup',
           },
         ],
       },
@@ -147,13 +142,31 @@ export default [
         path: '/registration/document',
         name: 'document',
         icon: 'BookOutlined',
-        // component: './RegistrationCenter/Document',
+        component: './RegCenter/Document',
       },
       {
         path: '/registration/fragment',
         name: 'fragment',
         icon: 'RocketOutlined',
-        // component: './RegistrationCenter/FragmentVariable',
+        component: './RegCenter/GlobalVar',
+      },
+      {
+        path: '/registration/gitprojects',
+        name: 'gitprojects',
+        icon: 'GithubOutlined',
+        component: './RegCenter/GitProject',
+      },
+      {
+        path: '/registration/udf',
+        name: 'udf',
+        icon: 'ToolOutlined',
+        component: './RegCenter/UDF',
+      },
+      {
+        path: '/registration/resource',
+        name: 'resource',
+        icon: 'FileZipOutlined',
+        component: './RegCenter/Resource',
       },
     ],
   },
@@ -161,7 +174,8 @@ export default [
     name: 'auth',
     icon: 'SafetyCertificateOutlined',
     path: '/auth',
-    // access: "canAdmin",
+    access: 'canAdmin',
+    footerRender: false,
     routes: [
       {
         path: '/auth',
@@ -180,6 +194,12 @@ export default [
         component: './AuthCenter/Role',
       },
       {
+        path: '/auth/rowpermissions',
+        name: 'rowpermissions',
+        icon: 'SafetyCertificateOutlined',
+        component: './AuthCenter/RowPermissions',
+      },
+      {
         path: '/auth/tenant',
         name: 'tenant',
         icon: 'SecurityScanOutlined',
@@ -192,40 +212,29 @@ export default [
     name: 'settings',
     icon: 'SettingOutlined',
     path: '/settings',
+    footerRender: false,
     routes: [
       {
         path: '/settings',
-        redirect: '/settings/flinksetting',
+        redirect: '/settings/globalsetting',
       },
       {
-        path: '/settings/flinksetting',
-        name: 'flinksetting',
+        path: '/settings/globalsetting',
+        name: 'globalsetting',
         icon: 'SettingOutlined',
-        // component: './SettingCenter/FlinkSettings',
+        component: './SettingCenter/GlobalSetting',
       },
       {
-        path: '/settings/udf',
-        name: 'udf',
-        icon: 'ToolOutlined',
-        // component: './SettingCenter/UDFTemplate',
-      },
-      {
-        path: '/settings/system',
-        name: 'system',
+        path: '/settings/systemlog',
+        name: 'systemlog',
         icon: 'InfoCircleOutlined',
-        // component: './SettingCenter/SystemInfo',
+        component: './SettingCenter/SystemLogs',
       },
       {
         path: '/settings/process',
         name: 'process',
         icon: 'ReconciliationOutlined',
-        // component: './SettingCenter/ProcessList',
-      },
-      {
-        path: '/settings/services',
-        name: 'services',
-        icon: 'CloudServerOutlined',
-        // component: './SettingCenter/Service',
+        component: './SettingCenter/Process',
       },
     ],
   },
@@ -233,17 +242,23 @@ export default [
     path: '/metrics',
     name: 'metrics',
     icon: 'DashboardOutlined',
-    // component: './Metrics',
+    footerRender: false,
+    component: './Metrics',
   },
   {
     path: '/about',
     name: 'about',
     icon: 'SmileOutlined',
+    footerRender: false,
     component: './Other/About',
   },
   {
+    path: '/account/center',
+    footerRender: false,
+    component: './Other/PersonCenter',
+  },
+  {
     path: '*',
-    layout: false,
     component: './Other/404',
   },
 ];

@@ -25,12 +25,12 @@ import org.dinky.assertion.Asserts;
 import org.dinky.cdc.CDCBuilder;
 import org.dinky.cdc.CDCBuilderFactory;
 import org.dinky.cdc.SinkBuilder;
+import org.dinky.data.model.FlinkCDCConfig;
+import org.dinky.data.model.Schema;
+import org.dinky.data.model.Table;
 import org.dinky.executor.Executor;
 import org.dinky.metadata.driver.Driver;
 import org.dinky.metadata.driver.DriverConfig;
-import org.dinky.model.FlinkCDCConfig;
-import org.dinky.model.Schema;
-import org.dinky.model.Table;
 import org.dinky.trans.AbstractOperation;
 import org.dinky.trans.Operation;
 import org.dinky.utils.SplitUtil;
@@ -50,7 +50,6 @@ import java.util.stream.Collectors;
 /**
  * CreateCDCSourceOperation
  *
- * @author wenmo
  * @since 2022/1/29 23:25
  */
 public class CreateCDCSourceOperation extends AbstractOperation implements Operation {
@@ -94,6 +93,7 @@ public class CreateCDCSourceOperation extends AbstractOperation implements Opera
                         cdcSource.getDebezium(),
                         cdcSource.getSource(),
                         cdcSource.getSink(),
+                        cdcSource.getSinks(),
                         cdcSource.getJdbc());
         try {
             CDCBuilder cdcBuilder = CDCBuilderFactory.buildCDCBuilder(config);
@@ -185,9 +185,9 @@ public class CreateCDCSourceOperation extends AbstractOperation implements Opera
                 }
             }
 
-            logger.info("A total of " + schemaTableNameList.size() + " tables were detected...");
+            logger.info("A total of {} tables were detected...", schemaTableNameList.size());
             for (int i = 0; i < schemaTableNameList.size(); i++) {
-                logger.info((i + 1) + ": " + schemaTableNameList.get(i));
+                logger.info("{}: {}", i + 1, schemaTableNameList.get(i));
             }
             config.setSchemaTableNameList(schemaTableNameList);
             config.setSchemaList(schemaList);
@@ -195,30 +195,19 @@ public class CreateCDCSourceOperation extends AbstractOperation implements Opera
                     executor.getStreamExecutionEnvironment();
             if (Asserts.isNotNull(config.getParallelism())) {
                 streamExecutionEnvironment.setParallelism(config.getParallelism());
-                logger.info("Set parallelism: " + config.getParallelism());
+                logger.info("Set parallelism: {}", config.getParallelism());
             }
             if (Asserts.isNotNull(config.getCheckpoint())) {
                 streamExecutionEnvironment.enableCheckpointing(config.getCheckpoint());
-                logger.info("Set checkpoint: " + config.getCheckpoint());
+                logger.info("Set checkpoint: {}", config.getCheckpoint());
             }
             DataStreamSource<String> streamSource = cdcBuilder.build(streamExecutionEnvironment);
-            logger.info("Build " + config.getType() + " successful...");
-            if (cdcSource.getSinks() == null || cdcSource.getSinks().size() == 0) {
-                sinkBuilder.build(
-                        cdcBuilder,
-                        streamExecutionEnvironment,
-                        executor.getCustomTableEnvironment(),
-                        streamSource);
-            } else {
-                for (Map<String, String> sink : cdcSource.getSinks()) {
-                    config.setSink(sink);
-                    sinkBuilder.build(
-                            cdcBuilder,
-                            streamExecutionEnvironment,
-                            executor.getCustomTableEnvironment(),
-                            streamSource);
-                }
-            }
+            logger.info("Build {} successful...", config.getType());
+            sinkBuilder.build(
+                    cdcBuilder,
+                    streamExecutionEnvironment,
+                    executor.getCustomTableEnvironment(),
+                    streamSource);
             logger.info("Build CDCSOURCE Task successful!");
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
@@ -242,7 +231,9 @@ public class CreateCDCSourceOperation extends AbstractOperation implements Opera
             driver.createSchema(schema);
         }
         sink.put(FlinkCDCConfig.SINK_DB, schema);
-        sink.put("url", url + "/" + schema);
+        if (!url.contains(schema)) {
+            sink.put("url", url + "/" + schema);
+        }
         return driver;
     }
 

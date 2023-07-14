@@ -20,12 +20,13 @@
 package org.dinky.executor;
 
 import org.dinky.assertion.Asserts;
+import org.dinky.context.CustomTableEnvironmentContext;
 import org.dinky.context.DinkyClassLoaderContextHolder;
+import org.dinky.data.model.LineageRel;
+import org.dinky.data.result.SqlExplainResult;
 import org.dinky.interceptor.FlinkInterceptor;
 import org.dinky.interceptor.FlinkInterceptorResult;
-import org.dinky.model.LineageRel;
 import org.dinky.parser.CustomParserImpl;
-import org.dinky.result.SqlExplainResult;
 
 import org.apache.flink.api.common.ExecutionConfig;
 import org.apache.flink.api.common.JobExecutionResult;
@@ -64,7 +65,6 @@ import lombok.extern.slf4j.Slf4j;
 /**
  * Executor
  *
- * @author wenmo
  * @since 2021/11/17
  */
 @Slf4j
@@ -185,7 +185,9 @@ public abstract class Executor {
     private void initExecutionEnvironment() {
         useSqlFragment = executorSetting.isUseSqlFragment();
         tableEnvironment = createCustomTableEnvironment();
-        tableEnvironment.injectParser(new CustomParserImpl());
+        CustomTableEnvironmentContext.set(tableEnvironment);
+        tableEnvironment.injectParser(
+                new CustomParserImpl(tableEnvironment.getPlanner().getParser()));
         tableEnvironment.injectExtendedExecutor(new CustomExtendedOperationExecutorImpl(this));
         Configuration configuration = tableEnvironment.getConfig().getConfiguration();
         if (executorSetting.isValidJobName()) {
@@ -236,9 +238,11 @@ public abstract class Executor {
                 reset.invoke(UserGroupInformation.class);
                 log.info("Reset kerberos authentication...");
             }
-        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
-            throw new RuntimeException(e);
-        } catch (IOException e) {
+        } catch (NoSuchMethodException
+                | IllegalAccessException
+                | InvocationTargetException
+                | IOException e) {
+            logger.error("Reset kerberos authentication error.", e);
             throw new RuntimeException(e);
         }
     }
@@ -282,8 +286,7 @@ public abstract class Executor {
                     "Kerberos [{}] authentication success.",
                     UserGroupInformation.getLoginUser().getUserName());
         } catch (IOException e) {
-            log.error("Kerberos authentication failed.");
-            e.printStackTrace();
+            log.error("Kerberos authentication failed. ", e);
         }
     }
 
@@ -300,6 +303,7 @@ public abstract class Executor {
         if (udfPyFilePath == null || udfPyFilePath.length == 0) {
             return;
         }
+
         Configuration configuration = tableEnvironment.getConfig().getConfiguration();
         configuration.setString(PythonOptions.PYTHON_FILES, String.join(",", udfPyFilePath));
         configuration.setString(PythonOptions.PYTHON_CLIENT_EXECUTABLE, executable);
@@ -336,7 +340,7 @@ public abstract class Executor {
         try {
             objectNode = (ObjectNode) mapper.readTree(json);
         } catch (JsonProcessingException e) {
-            e.printStackTrace();
+            logger.error("Get stream graph json node error.", e);
         }
 
         return objectNode;
@@ -347,11 +351,8 @@ public abstract class Executor {
     }
 
     public ObjectNode getStreamGraphFromDataStream(List<String> statements) {
-        for (String statement : statements) {
-            executeSql(statement);
-        }
-        StreamGraph streamGraph = getStreamGraph();
-        return getStreamGraphJsonNode(streamGraph);
+        statements.forEach(this::executeSql);
+        return getStreamGraphJsonNode(getStreamGraph());
     }
 
     public JobPlanInfo getJobPlanInfo(List<String> statements) {
@@ -359,9 +360,7 @@ public abstract class Executor {
     }
 
     public JobPlanInfo getJobPlanInfoFromDataStream(List<String> statements) {
-        for (String statement : statements) {
-            executeSql(statement);
-        }
+        statements.forEach(this::executeSql);
         StreamGraph streamGraph = getStreamGraph();
         return new JobPlanInfo(JsonPlanGenerator.generatePlan(streamGraph.getJobGraph()));
     }
@@ -372,17 +371,13 @@ public abstract class Executor {
 
     public TableResult executeStatementSet(List<String> statements) {
         StatementSet statementSet = tableEnvironment.createStatementSet();
-        for (String item : statements) {
-            statementSet.addInsertSql(item);
-        }
+        statements.forEach(statementSet::addInsertSql);
         return statementSet.execute();
     }
 
     public String explainStatementSet(List<String> statements) {
         StatementSet statementSet = tableEnvironment.createStatementSet();
-        for (String item : statements) {
-            statementSet.addInsertSql(item);
-        }
+        statements.forEach(statementSet::addInsertSql);
         return statementSet.explain();
     }
 

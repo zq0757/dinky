@@ -19,15 +19,14 @@
 
 package org.dinky.service;
 
-import org.dinky.db.service.ISuperService;
-import org.dinky.model.Jar;
+import org.dinky.data.model.Jar;
+import org.dinky.mybatis.service.ISuperService;
 
 import java.util.List;
 
 /**
  * JarService
  *
- * @author wenmo
  * @since 2021/11/13
  */
 public interface JarService extends ISuperService<Jar> {

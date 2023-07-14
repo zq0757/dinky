@@ -22,7 +22,12 @@ package org.dinky.explainer;
 import org.dinky.assertion.Asserts;
 import org.dinky.constant.FlinkSQLConstant;
 import org.dinky.context.DinkyClassLoaderContextHolder;
-import org.dinky.context.JarPathContextHolder;
+import org.dinky.context.FlinkUdfPathContextHolder;
+import org.dinky.data.model.LineageRel;
+import org.dinky.data.model.SystemConfiguration;
+import org.dinky.data.result.ExplainResult;
+import org.dinky.data.result.SqlExplainResult;
+import org.dinky.executor.CustomTableEnvironment;
 import org.dinky.executor.Executor;
 import org.dinky.explainer.watchTable.WatchStatementExplainer;
 import org.dinky.function.data.model.UDF;
@@ -32,24 +37,26 @@ import org.dinky.job.JobConfig;
 import org.dinky.job.JobManager;
 import org.dinky.job.JobParam;
 import org.dinky.job.StatementParam;
-import org.dinky.model.LineageRel;
-import org.dinky.model.SystemConfiguration;
 import org.dinky.parser.SqlType;
 import org.dinky.parser.check.AddJarSqlParser;
 import org.dinky.process.context.ProcessContextHolder;
 import org.dinky.process.model.ProcessEntity;
-import org.dinky.result.ExplainResult;
-import org.dinky.result.SqlExplainResult;
 import org.dinky.trans.Operations;
 import org.dinky.utils.LogUtil;
 import org.dinky.utils.SqlUtil;
 import org.dinky.utils.URLUtils;
 
+import org.apache.flink.configuration.Configuration;
+import org.apache.flink.core.fs.FileSystem;
 import org.apache.flink.runtime.rest.messages.JobPlanInfo;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -60,10 +67,10 @@ import cn.hutool.core.util.StrUtil;
 /**
  * Explainer
  *
- * @author wenmo
  * @since 2021/6/22
  */
 public class Explainer {
+    private static final Logger logger = LoggerFactory.getLogger(Explainer.class);
 
     private Executor executor;
     private boolean useStatementSet;
@@ -111,9 +118,14 @@ public class Explainer {
             SqlType operationType = Operations.getOperationType(statement);
             if (operationType.equals(SqlType.ADD)) {
                 AddJarSqlParser.getAllFilePath(statement)
-                        .forEach(JarPathContextHolder::addOtherPlugins);
+                        .forEach(FlinkUdfPathContextHolder::addOtherPlugins);
                 DinkyClassLoaderContextHolder.get()
-                        .addURL(URLUtils.getURLs(JarPathContextHolder.getOtherPluginsFiles()));
+                        .addURL(URLUtils.getURLs(FlinkUdfPathContextHolder.getOtherPluginsFiles()));
+            } else if (operationType.equals(SqlType.ADD_JAR)) {
+                Configuration combinationConfig = getCombinationConfig();
+                FileSystem.initialize(combinationConfig, null);
+                ddl.add(new StatementParam(statement, operationType));
+                statementList.add(statement);
             } else if (operationType.equals(SqlType.INSERT)
                     || operationType.equals(SqlType.SELECT)
                     || operationType.equals(SqlType.SHOW)
@@ -129,25 +141,34 @@ public class Explainer {
             } else if (operationType.equals(SqlType.WATCH)) {
                 WatchStatementExplainer watchStatementExplainer =
                         new WatchStatementExplainer(statement);
-                String tableName = watchStatementExplainer.getTableName();
-                ddl.add(
-                        new StatementParam(
-                                watchStatementExplainer.getCreateStatement(tableName),
-                                SqlType.CREATE));
-                trans.add(
-                        new StatementParam(
-                                watchStatementExplainer.getInsertStatement(tableName),
-                                SqlType.INSERT));
+
+                String[] tableNames = watchStatementExplainer.getTableNames();
+                for (String tableName : tableNames) {
+                    trans.add(
+                            new StatementParam(
+                                    WatchStatementExplainer.getCreateStatement(tableName),
+                                    SqlType.CTAS));
+                }
             } else {
                 UDF udf = UDFUtil.toUDF(statement);
                 if (Asserts.isNotNull(udf)) {
-                    udfList.add(UDFUtil.toUDF(statement));
+                    udfList.add(udf);
                 }
                 ddl.add(new StatementParam(statement, operationType));
                 statementList.add(statement);
             }
         }
         return new JobParam(statementList, ddl, trans, execute, CollUtil.removeNull(udfList));
+    }
+
+    private Configuration getCombinationConfig() {
+        CustomTableEnvironment cte = executor.getCustomTableEnvironment();
+        Configuration rootConfig = cte.getRootConfiguration();
+        Configuration config = cte.getConfig().getConfiguration();
+        Configuration combinationConfig = new Configuration();
+        combinationConfig.addAll(rootConfig);
+        combinationConfig.addAll(config);
+        return combinationConfig;
     }
 
     public List<UDF> parseUDFFromStatements(String[] statements) {
@@ -158,7 +179,7 @@ public class Explainer {
             }
             UDF udf = UDFUtil.toUDF(statement);
             if (Asserts.isNotNull(udf)) {
-                udfList.add(UDFUtil.toUDF(statement));
+                udfList.add(udf);
             }
         }
         return udfList;
@@ -197,7 +218,7 @@ public class Explainer {
             record.setIndex(index++);
             sqlExplainRecords.add(record);
         }
-        if (correct && jobParam.getTrans().size() > 0) {
+        if (correct && !jobParam.getTrans().isEmpty()) {
             if (useStatementSet) {
                 SqlExplainResult record = new SqlExplainResult();
                 List<String> inserts = new ArrayList<>();
@@ -206,7 +227,7 @@ public class Explainer {
                         inserts.add(item.getValue());
                     }
                 }
-                if (inserts.size() > 0) {
+                if (!inserts.isEmpty()) {
                     String sqlSet = String.join(";\r\n ", inserts);
                     try {
                         record.setExplain(executor.explainStatementSet(inserts));
@@ -288,43 +309,39 @@ public class Explainer {
 
     public ObjectNode getStreamGraph(String statement) {
         JobParam jobParam = pretreatStatements(SqlUtil.getStatements(statement, sqlSeparator));
-        if (jobParam.getDdl().size() > 0) {
-            for (StatementParam statementParam : jobParam.getDdl()) {
-                executor.executeSql(statementParam.getValue());
-            }
-        }
-        if (jobParam.getTrans().size() > 0) {
+        jobParam.getDdl().forEach(statementParam -> executor.executeSql(statementParam.getValue()));
+
+        if (!jobParam.getTrans().isEmpty()) {
             return executor.getStreamGraph(jobParam.getTransStatement());
-        } else if (jobParam.getExecute().size() > 0) {
-            List<String> datastreamPlans = new ArrayList<>();
-            for (StatementParam item : jobParam.getExecute()) {
-                datastreamPlans.add(item.getValue());
-            }
-            return executor.getStreamGraphFromDataStream(datastreamPlans);
-        } else {
-            return mapper.createObjectNode();
         }
+
+        if (!jobParam.getExecute().isEmpty()) {
+            List<String> datastreamPlans =
+                    jobParam.getExecute().stream()
+                            .map(StatementParam::getValue)
+                            .collect(Collectors.toList());
+            return executor.getStreamGraphFromDataStream(datastreamPlans);
+        }
+        return mapper.createObjectNode();
     }
 
     public JobPlanInfo getJobPlanInfo(String statement) {
         JobParam jobParam = pretreatStatements(SqlUtil.getStatements(statement, sqlSeparator));
-        if (jobParam.getDdl().size() > 0) {
-            for (StatementParam statementParam : jobParam.getDdl()) {
-                executor.executeSql(statementParam.getValue());
-            }
-        }
-        if (jobParam.getTrans().size() > 0) {
+        jobParam.getDdl().forEach(statementParam -> executor.executeSql(statementParam.getValue()));
+
+        if (!jobParam.getTrans().isEmpty()) {
             return executor.getJobPlanInfo(jobParam.getTransStatement());
-        } else if (jobParam.getExecute().size() > 0) {
-            List<String> datastreamPlans = new ArrayList<>();
-            for (StatementParam item : jobParam.getExecute()) {
-                datastreamPlans.add(item.getValue());
-            }
-            return executor.getJobPlanInfoFromDataStream(datastreamPlans);
-        } else {
-            throw new RuntimeException(
-                    "Creating job plan fails because this job doesn't contain an insert statement.");
         }
+
+        if (!jobParam.getExecute().isEmpty()) {
+            List<String> datastreamPlans =
+                    jobParam.getExecute().stream()
+                            .map(StatementParam::getValue)
+                            .collect(Collectors.toList());
+            return executor.getJobPlanInfoFromDataStream(datastreamPlans);
+        }
+        throw new RuntimeException(
+                "Creating job plan fails because this job doesn't contain an insert statement.");
     }
 
     public List<LineageRel> getLineage(String statement) {
@@ -337,27 +354,25 @@ public class Explainer {
                         useStatementSet,
                         1,
                         executor.getTableConfig().getConfiguration().toMap());
-        JobManager jm = JobManager.buildPlanMode(jobConfig);
-        this.initialize(jm, jobConfig, statement);
+        this.initialize(JobManager.buildPlanMode(jobConfig), jobConfig, statement);
 
-        String[] sqls = SqlUtil.getStatements(statement, sqlSeparator);
         List<LineageRel> lineageRelList = new ArrayList<>();
-        for (String item : sqls) {
-            String sql = "";
+        for (String item : SqlUtil.getStatements(statement, sqlSeparator)) {
             try {
-                sql = FlinkInterceptor.pretreatStatement(executor, item);
+                String sql = FlinkInterceptor.pretreatStatement(executor, item);
                 if (Asserts.isNullString(sql)) {
                     continue;
                 }
                 SqlType operationType = Operations.getOperationType(sql);
                 if (operationType.equals(SqlType.INSERT)) {
                     lineageRelList.addAll(executor.getLineage(sql));
-                } else if (!operationType.equals(SqlType.SELECT)) {
+                } else if (!operationType.equals(SqlType.SELECT)
+                        && !operationType.equals(SqlType.WATCH)) {
                     executor.executeSql(sql);
                 }
             } catch (Exception e) {
-                e.printStackTrace();
-                break;
+                logger.error(e.getMessage());
+                return lineageRelList;
             }
         }
         return lineageRelList;

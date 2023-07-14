@@ -19,13 +19,15 @@
 
 package org.dinky.controller;
 
-import org.dinky.common.result.ProTableResult;
-import org.dinky.common.result.Result;
-import org.dinky.model.Statement;
+import org.dinky.data.enums.Status;
+import org.dinky.data.model.Statement;
+import org.dinky.data.result.ProTableResult;
+import org.dinky.data.result.Result;
 import org.dinky.service.StatementService;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -35,6 +37,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -42,7 +45,6 @@ import lombok.extern.slf4j.Slf4j;
 /**
  * StatementController
  *
- * @author wenmo
  * @since 2021/5/28 13:48
  */
 @Slf4j
@@ -52,14 +54,15 @@ import lombok.extern.slf4j.Slf4j;
 public class StatementController {
 
     private final StatementService statementService;
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     /** 新增或者更新 */
     @PutMapping
     public Result<Void> saveOrUpdate(@RequestBody Statement statement) throws Exception {
         if (statementService.saveOrUpdate(statement)) {
-            return Result.succeed("新增成功");
+            return Result.succeed(Status.SAVE_SUCCESS);
         } else {
-            return Result.failed("新增失败");
+            return Result.failed(Status.SAVE_FAILED);
         }
     }
 
@@ -95,6 +98,18 @@ public class StatementController {
     @PostMapping("/getOneById")
     public Result<Statement> getOneById(@RequestBody Statement statement) throws Exception {
         statement = statementService.getById(statement.getId());
-        return Result.succeed(statement, "获取成功");
+        return Result.succeed(statement);
+    }
+
+    @PostMapping("/getWatchTables")
+    @SuppressWarnings("unchecked")
+    public Result<List<String>> getWatchTables(@RequestBody String statement) {
+        try {
+            Map<String, String> data = objectMapper.readValue(statement, Map.class);
+            String ss = data.get("statement");
+            return Result.succeed(statementService.getWatchTables(ss));
+        } catch (Exception e) {
+            return Result.failed(e.getMessage());
+        }
     }
 }

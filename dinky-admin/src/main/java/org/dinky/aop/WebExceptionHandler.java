@@ -19,10 +19,11 @@
 
 package org.dinky.aop;
 
-import org.dinky.common.result.Result;
-import org.dinky.exception.BusException;
-import org.dinky.model.CodeEnum;
-import org.dinky.utils.MessageResolverUtils;
+import org.dinky.data.enums.CodeEnum;
+import org.dinky.data.enums.Status;
+import org.dinky.data.exception.BusException;
+import org.dinky.data.result.Result;
+import org.dinky.utils.I18nMsgUtils;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -50,7 +51,6 @@ import cn.hutool.core.util.StrUtil;
 /**
  * WebExceptionHandler
  *
- * @author wenmo
  * @since 2022/2/2 22:22
  */
 @ControllerAdvice
@@ -61,8 +61,8 @@ public class WebExceptionHandler {
 
     @ExceptionHandler
     public Result<Void> busException(BusException e) {
-        if (StrUtil.isNotEmpty(e.getMsg())) {
-            return Result.failed(MessageResolverUtils.getMessages(e.getCode(), e.getErrorArgs()));
+        if (StrUtil.isEmpty(e.getMsg())) {
+            return Result.failed(I18nMsgUtils.getMsg(e.getCode(), e.getErrorArgs()));
         }
         return Result.failed(e.getMsg());
     }
@@ -73,7 +73,7 @@ public class WebExceptionHandler {
                 (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
         HttpServletResponse response = servletRequestAttributes.getResponse();
         response.setStatus(CodeEnum.NOTLOGIN.getCode());
-        return Result.notLogin(MessageResolverUtils.getMessage("login.not.login"));
+        return Result.failed(Status.USER_NOT_LOGIN);
     }
 
     /**
@@ -94,22 +94,22 @@ public class WebExceptionHandler {
                 FieldError fieldError = (FieldError) errors.get(0);
                 if (StringUtils.isNotBlank(fieldError.getDefaultMessage())) {
                     return Result.failed(
-                            String.format(
-                                    "字段:%s, %s",
-                                    fieldError.getField(), fieldError.getDefaultMessage()));
+                            Status.GLOBAL_PARAMS_CHECK_ERROR,
+                            fieldError.getField(),
+                            fieldError.getDefaultMessage());
                 }
                 return Result.failed(
-                        String.format(
-                                "字段:%s,不合法的值:%s",
-                                fieldError.getField(), fieldError.getRejectedValue()));
+                        Status.GLOBAL_PARAMS_CHECK_ERROR_VALUE,
+                        fieldError.getField(),
+                        fieldError.getRejectedValue());
             }
         }
-        return Result.failed(MessageResolverUtils.getMessage("request.params.error"));
+        return Result.failed(Status.REQUEST_PARAMS_ERROR);
     }
 
     @ExceptionHandler
     public Result<Void> unknownException(Exception e) {
         logger.error("ERROR:", e);
-        return Result.failed(e.getMessage());
+        return Result.failed(Status.UNKNOWN_ERROR, (Object) e.getMessage());
     }
 }

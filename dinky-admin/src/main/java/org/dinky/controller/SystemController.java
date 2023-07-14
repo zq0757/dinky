@@ -19,9 +19,9 @@
 
 package org.dinky.controller;
 
-import org.dinky.common.result.Result;
-import org.dinky.constant.DirConstant;
-import org.dinky.model.FileNode;
+import org.dinky.data.constant.DirConstant;
+import org.dinky.data.dto.TreeNodeDTO;
+import org.dinky.data.result.Result;
 import org.dinky.service.SystemService;
 
 import java.util.List;
@@ -33,12 +33,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import lombok.RequiredArgsConstructor;
 
-/**
- * SystemController
- *
- * @author wenmo
- * @since 2022/10/15 19:20
- */
+/** SystemController */
 @RestController
 @RequestMapping("/api/system")
 @RequiredArgsConstructor
@@ -46,21 +41,32 @@ public class SystemController {
 
     private final SystemService systemService;
 
+    /**
+     * All log files for this project
+     *
+     * @return {@link Result} <{@link List}<{@link TreeNodeDTO}>>
+     */
     @GetMapping("/listLogDir")
-    public Result<List<FileNode>> listLogDir() {
-        return Result.data(systemService.listLogDir());
+    public Result<List<TreeNodeDTO>> listLogDir() {
+        return Result.succeed(systemService.listLogDir());
     }
 
+    /**
+     * get root log file content
+     *
+     * @return {@link Result} <{@link String}>
+     */
     @GetMapping("/getRootLog")
     public Result<String> getRootLog() {
         return Result.data(systemService.readFile(DirConstant.ROOT_LOG_PATH));
     }
 
-    @GetMapping("/listDirByPath")
-    public Result<List<FileNode>> listDirByPath(@RequestParam String path) {
-        return Result.data(systemService.listDirByPath(path));
-    }
-
+    /**
+     * readFile by path
+     *
+     * @param path {@link String}
+     * @return {@link Result} <{@link String}>
+     */
     @GetMapping("/readFile")
     public Result<String> readFile(@RequestParam String path) {
         return Result.data(systemService.readFile(path));

@@ -31,12 +31,11 @@ import com.google.common.collect.Lists;
 /**
  * SqlSegment
  *
- * @author wenmo
  * @since 2021/6/14 16:12
  */
 public class SqlSegment {
 
-    private static final String Crlf = "|";
+    private static final String Crlf = new String(new byte[] {1});
 
     @SuppressWarnings("unused")
     private static final String FourSpace = "　　";
@@ -99,7 +98,7 @@ public class SqlSegment {
             m.appendReplacement(sb, Crlf);
         }
         m.appendTail(sb);
-        String[] arr = sb.toString().split("[|]");
+        String[] arr = sb.toString().split("[" + Crlf + "]");
         bodyPieces = Lists.newArrayList(arr);
     }
 

@@ -19,7 +19,7 @@
 
 package org.dinky.scheduler.client;
 
-import org.dinky.scheduler.config.DolphinSchedulerProperties;
+import org.dinky.data.model.SystemConfiguration;
 import org.dinky.scheduler.constant.Constants;
 import org.dinky.scheduler.exception.SchedulerException;
 import org.dinky.scheduler.model.TaskDefinition;
@@ -39,7 +39,6 @@ import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import cn.hutool.core.lang.TypeReference;
@@ -47,17 +46,11 @@ import cn.hutool.core.util.StrUtil;
 import cn.hutool.http.HttpRequest;
 import cn.hutool.json.JSONObject;
 
-/**
- * 任务定义
- *
- * @author 郑文豪
- */
+/** 任务定义 */
 @Component
 public class TaskClient {
 
     private static final Logger logger = LoggerFactory.getLogger(TaskClient.class);
-
-    @Autowired private DolphinSchedulerProperties dolphinSchedulerProperties;
 
     /**
      * 查询任务定义
@@ -66,8 +59,6 @@ public class TaskClient {
      * @param processName 工作流定义名称
      * @param taskName 任务定义名称
      * @return {@link TaskMainInfo}
-     * @author 郑文豪
-     * @date 2022/9/7 17:16
      */
     public TaskMainInfo getTaskMainInfo(Long projectCode, String processName, String taskName) {
         List<TaskMainInfo> lists = getTaskMainInfos(projectCode, processName, taskName);
@@ -86,8 +77,6 @@ public class TaskClient {
      * @param processName 工作流定义名称
      * @param taskName 任务定义名称
      * @return {@link List<TaskMainInfo>}
-     * @author 郑文豪
-     * @date 2022/9/7 17:16
      */
     public List<TaskMainInfo> getTaskMainInfos(
             Long projectCode, String processName, String taskName) {
@@ -95,7 +84,7 @@ public class TaskClient {
         map.put("projectCode", projectCode);
         String format =
                 StrUtil.format(
-                        dolphinSchedulerProperties.getUrl()
+                        SystemConfiguration.getInstances().getDolphinschedulerUrl().getValue()
                                 + "/projects/{projectCode}/task-definition",
                         map);
 
@@ -106,7 +95,11 @@ public class TaskClient {
 
         String content =
                 HttpRequest.get(format)
-                        .header(Constants.TOKEN, dolphinSchedulerProperties.getToken())
+                        .header(
+                                Constants.TOKEN,
+                                SystemConfiguration.getInstances()
+                                        .getDolphinschedulerToken()
+                                        .getValue())
                         .form(pageParams)
                         .timeout(5000)
                         .execute()
@@ -132,8 +125,6 @@ public class TaskClient {
      * @param projectCode 项目编号
      * @param taskCode 任务编号
      * @return {@link TaskDefinition}
-     * @author 郑文豪
-     * @date 2022/9/13 10:52
      */
     public TaskDefinition getTaskDefinition(Long projectCode, Long taskCode) {
         Map<String, Object> map = new HashMap<>();
@@ -141,13 +132,17 @@ public class TaskClient {
         map.put("code", taskCode);
         String format =
                 StrUtil.format(
-                        dolphinSchedulerProperties.getUrl()
+                        SystemConfiguration.getInstances().getDolphinschedulerUrl().getValue()
                                 + "/projects/{projectCode}/task-definition/{code}",
                         map);
 
         String content =
                 HttpRequest.get(format)
-                        .header(Constants.TOKEN, dolphinSchedulerProperties.getToken())
+                        .header(
+                                Constants.TOKEN,
+                                SystemConfiguration.getInstances()
+                                        .getDolphinschedulerToken()
+                                        .getValue())
                         .timeout(5000)
                         .execute()
                         .body();
@@ -162,8 +157,6 @@ public class TaskClient {
      * @param projectCode 项目编号
      * @param processCode 工作流定义编号
      * @return {@link TaskDefinitionLog}
-     * @author 郑文豪
-     * @date 2022/9/7 17:05
      */
     public TaskDefinitionLog createTaskDefinition(
             Long projectCode,
@@ -174,7 +167,7 @@ public class TaskClient {
         map.put("projectCode", projectCode);
         String format =
                 StrUtil.format(
-                        dolphinSchedulerProperties.getUrl()
+                        SystemConfiguration.getInstances().getDolphinschedulerUrl().getValue()
                                 + "/projects/{projectCode}/task-definition/save-single",
                         map);
 
@@ -188,7 +181,11 @@ public class TaskClient {
 
         String content =
                 HttpRequest.post(format)
-                        .header(Constants.TOKEN, dolphinSchedulerProperties.getToken())
+                        .header(
+                                Constants.TOKEN,
+                                SystemConfiguration.getInstances()
+                                        .getDolphinschedulerToken()
+                                        .getValue())
                         .form(pageParams)
                         .timeout(5000)
                         .execute()
@@ -205,8 +202,6 @@ public class TaskClient {
      * @param taskCode 任务定义编号
      * @param taskDefinitionJsonObj 修改参数
      * @return {@link Long}
-     * @author 郑文豪
-     * @date 2022/9/13 8:59
      */
     public Long updateTaskDefinition(
             long projectCode, long taskCode, String upstreamCodes, String taskDefinitionJsonObj) {
@@ -215,7 +210,7 @@ public class TaskClient {
         map.put("code", taskCode);
         String format =
                 StrUtil.format(
-                        dolphinSchedulerProperties.getUrl()
+                        SystemConfiguration.getInstances().getDolphinschedulerUrl().getValue()
                                 + "/projects/{projectCode}/task-definition/{code}/with-upstream",
                         map);
 
@@ -225,7 +220,11 @@ public class TaskClient {
 
         String content =
                 HttpRequest.put(format)
-                        .header(Constants.TOKEN, dolphinSchedulerProperties.getToken())
+                        .header(
+                                Constants.TOKEN,
+                                SystemConfiguration.getInstances()
+                                        .getDolphinschedulerToken()
+                                        .getValue())
                         .form(params)
                         .timeout(5000)
                         .execute()
@@ -240,22 +239,24 @@ public class TaskClient {
      * @param projectCode 项目编号
      * @param genNum 生成个数
      * @return {@link List}
-     * @author 郑文豪
-     * @date 2022/9/8 18:00
      */
     public List<Long> genTaskCodes(Long projectCode, int genNum) {
         Map<String, Object> map = new HashMap<>();
         map.put("projectCode", projectCode);
         String format =
                 StrUtil.format(
-                        dolphinSchedulerProperties.getUrl()
+                        SystemConfiguration.getInstances().getDolphinschedulerUrl().getValue()
                                 + "/projects/{projectCode}/task-definition/gen-task-codes",
                         map);
         Map<String, Object> params = new HashMap<>();
         params.put("genNum", genNum);
         String content =
                 HttpRequest.get(format)
-                        .header(Constants.TOKEN, dolphinSchedulerProperties.getToken())
+                        .header(
+                                Constants.TOKEN,
+                                SystemConfiguration.getInstances()
+                                        .getDolphinschedulerToken()
+                                        .getValue())
                         .form(params)
                         .timeout(5000)
                         .execute()
@@ -270,13 +271,11 @@ public class TaskClient {
      *
      * @param projectCode 项目编号
      * @return {@link Long}
-     * @author 郑文豪
-     * @date 2022/9/8 18:02
      */
     public Long genTaskCode(Long projectCode) {
         List<Long> codes = genTaskCodes(projectCode, 1);
         if (codes == null || codes.isEmpty()) {
-            throw new SchedulerException("生成任务定义编号失败");
+            throw new SchedulerException("Failed to generate task definition number");
         }
         return codes.get(0);
     }

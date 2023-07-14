@@ -20,14 +20,14 @@
 package org.dinky.metadata.driver;
 
 import org.dinky.assertion.Asserts;
-import org.dinky.exception.MetaDataException;
-import org.dinky.exception.SplitTableException;
+import org.dinky.data.exception.MetaDataException;
+import org.dinky.data.exception.SplitTableException;
+import org.dinky.data.model.Column;
+import org.dinky.data.model.QueryData;
+import org.dinky.data.model.Schema;
+import org.dinky.data.model.Table;
+import org.dinky.data.result.SqlExplainResult;
 import org.dinky.metadata.result.JdbcSelectResult;
-import org.dinky.model.Column;
-import org.dinky.model.QueryData;
-import org.dinky.model.Schema;
-import org.dinky.model.Table;
-import org.dinky.result.SqlExplainResult;
 
 import java.util.List;
 import java.util.Map;
@@ -38,7 +38,6 @@ import java.util.Set;
 /**
  * Driver
  *
- * @author wenmo
  * @since 2021/7/19 23:15
  */
 public interface Driver extends AutoCloseable {
@@ -59,6 +58,7 @@ public interface Driver extends AutoCloseable {
         if (DriverPool.exist(key)) {
             return getHealthDriver(key);
         }
+
         synchronized (Driver.class) {
             Optional<Driver> optionalDriver = Driver.get(config);
             if (!optionalDriver.isPresent()) {
@@ -72,7 +72,6 @@ public interface Driver extends AutoCloseable {
     }
 
     static Driver buildUnconnected(DriverConfig config) {
-        String key = config.getName();
         synchronized (Driver.class) {
             Optional<Driver> optionalDriver = Driver.get(config);
             if (!optionalDriver.isPresent()) {
@@ -115,9 +114,11 @@ public interface Driver extends AutoCloseable {
                 type = "Greenplum";
             }
         }
+
         if (Asserts.isNull(type)) {
             throw new MetaDataException("缺少数据源类型:【" + connector + "】");
         }
+
         DriverConfig driverConfig = new DriverConfig(url, type, url, username, password);
         return build(driverConfig);
     }

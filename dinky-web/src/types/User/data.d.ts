@@ -15,47 +15,52 @@
  * limitations under the License.
  */
 
+import {ExcludeNameAndEnableColumns} from "@/types/Public/data";
+
 declare namespace UserBaseInfo {
-  export type User = {
-    id: number;
+  export type User = ExcludeNameAndEnableColumns & {
     username: string;
     nickname?: string;
     password?: string;
     avatar?: string;
     worknum?: string;
+    userType?: number;
     mobile?: string;
-    createTime?: Date;
-    updateTime?: Date;
     enabled: boolean;
     isDelete: boolean;
     isAdmin?: boolean;
   };
 
   export type ChangePasswordParams = {
+    id: number;
     username: string;
-    password?: string;
-    newPassword?: string;
-    newPasswordCheck?: string;
+    password: string;
+    newPassword: string;
+    newPasswordCheck: string;
   };
 
-  export type Tenant = {
-    id: number;
+  export type Tenant = ExcludeNameAndEnableColumns & {
     tenantCode: string;
     isDelete: boolean;
     note?: string;
-    createTime?: Date;
-    updateTime?: Date;
   };
 
-  export type Role = {
-    id: number;
+  export type Role = ExcludeNameAndEnableColumns & {
     tenantId: number;
     tenant: Tenant;
     roleCode?: string;
     roleName?: string;
     isDelete: boolean;
     note?: string;
-    createTime?: Date;
-    updateTime?: Date;
   };
 }
+
+
+
+export type RowPermissions = ExcludeNameAndEnableColumns & {
+  roleId: number;
+  roleCode: string;
+  roleName: string;
+  tableName: string;
+  expression: string;
+};

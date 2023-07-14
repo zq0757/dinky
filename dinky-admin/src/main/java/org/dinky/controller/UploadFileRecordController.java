@@ -19,8 +19,8 @@
 
 package org.dinky.controller;
 
-import org.dinky.common.result.Result;
-import org.dinky.model.UploadFileRecord;
+import org.dinky.data.model.UploadFileRecord;
+import org.dinky.data.result.Result;
 import org.dinky.service.UploadFileRecordService;
 
 import java.util.List;
@@ -49,6 +49,6 @@ public class UploadFileRecordController {
     @PostMapping("/list")
     public Result<String> get(@RequestBody UploadFileRecord record) {
         List<UploadFileRecord> records = uploadFileRecordService.list(new QueryWrapper<>(record));
-        return Result.succeed(JSONUtil.toJsonStr(records), "");
+        return Result.succeed(JSONUtil.toJsonStr(records));
     }
 }

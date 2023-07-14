@@ -20,13 +20,13 @@
 package org.dinky.metadata.driver;
 
 import org.dinky.assertion.Asserts;
+import org.dinky.data.model.Column;
+import org.dinky.data.model.QueryData;
+import org.dinky.data.model.Table;
 import org.dinky.metadata.convert.ITypeConvert;
 import org.dinky.metadata.convert.MySqlTypeConvert;
 import org.dinky.metadata.query.IDBQuery;
 import org.dinky.metadata.query.MySqlQuery;
-import org.dinky.model.Column;
-import org.dinky.model.QueryData;
-import org.dinky.model.Table;
 import org.dinky.utils.TextUtil;
 
 import java.text.MessageFormat;
@@ -38,7 +38,6 @@ import java.util.stream.Collectors;
 /**
  * MysqlDriver
  *
- * @author wenmo
  * @since 2021/7/20 14:06
  */
 public class MySqlDriver extends AbstractJdbcDriver {
@@ -90,7 +89,7 @@ public class MySqlDriver extends AbstractJdbcDriver {
         return genTable(table);
     }
 
-    public String genTable(Table table) {
+    private String genTable(Table table) {
         String columnStrs =
                 table.getColumns().stream()
                         .map(
@@ -170,14 +169,10 @@ public class MySqlDriver extends AbstractJdbcDriver {
 
         StringBuilder optionBuilder =
                 new StringBuilder()
-                        .append("select * from ")
-                        .append("`")
-                        .append(queryData.getSchemaName())
-                        .append("`")
-                        .append(".")
-                        .append("`")
-                        .append(queryData.getTableName())
-                        .append("`");
+                        .append(
+                                String.format(
+                                        "select * from `%s`.`%s`",
+                                        queryData.getSchemaName(), queryData.getTableName()));
 
         if (where != null && !where.equals("")) {
             optionBuilder.append(" where ").append(where);
@@ -221,20 +216,12 @@ public class MySqlDriver extends AbstractJdbcDriver {
             }
         }
         if (Asserts.isNotNullString(table.getComment())) {
-            sb.append(" FROM `")
-                    .append(table.getSchema())
-                    .append("`.`")
-                    .append(table.getName())
-                    .append("`;")
-                    .append(" -- ")
-                    .append(table.getComment())
-                    .append("\n");
+            sb.append(
+                    String.format(
+                            " FROM `%s`.`%s`; -- %s\n",
+                            table.getSchema(), table.getName(), table.getComment()));
         } else {
-            sb.append(" FROM `")
-                    .append(table.getSchema())
-                    .append("`.`")
-                    .append(table.getName())
-                    .append("`;\n");
+            sb.append(String.format(" FROM `%s`.`%s`;\n", table.getSchema(), table.getName()));
         }
         return sb.toString();
     }

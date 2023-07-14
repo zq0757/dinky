@@ -19,16 +19,15 @@
 
 package org.dinky.assertion;
 
-import org.dinky.exception.BusException;
-import org.dinky.model.Cluster;
-import org.dinky.model.Jar;
-import org.dinky.model.Statement;
-import org.dinky.model.Task;
+import org.dinky.data.exception.BusException;
+import org.dinky.data.model.Cluster;
+import org.dinky.data.model.Jar;
+import org.dinky.data.model.Statement;
+import org.dinky.data.model.Task;
 
 /**
  * Assert
  *
- * @author wenmo
  * @since 2021/5/30 11:13
  */
 public interface Assert {

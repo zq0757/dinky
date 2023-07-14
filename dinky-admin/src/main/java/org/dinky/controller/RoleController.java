@@ -19,13 +19,12 @@
 
 package org.dinky.controller;
 
-import org.dinky.common.result.ProTableResult;
-import org.dinky.common.result.Result;
-import org.dinky.model.Role;
-import org.dinky.model.UserRole;
+import org.dinky.data.model.Role;
+import org.dinky.data.model.UserRole;
+import org.dinky.data.result.ProTableResult;
+import org.dinky.data.result.Result;
 import org.dinky.service.RoleService;
 import org.dinky.service.UserRoleService;
-import org.dinky.utils.MessageResolverUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -84,6 +83,7 @@ public class RoleController {
      * @return delete result code
      */
     @DeleteMapping
+    @Deprecated
     public Result<Void> deleteMul(@RequestBody JsonNode para) {
         return roleService.deleteRoles(para);
     }
@@ -115,6 +115,6 @@ public class RoleController {
             userRoleIds.add(userRole.getRoleId());
         }
         Dict result = Dict.create().set("roles", roleList).set("roleIds", userRoleIds);
-        return Result.succeed(result, MessageResolverUtils.getMessage("response.get.success"));
+        return Result.succeed(result);
     }
 }

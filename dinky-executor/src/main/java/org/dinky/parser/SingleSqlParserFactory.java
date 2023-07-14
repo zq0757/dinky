@@ -19,6 +19,7 @@
 
 package org.dinky.parser;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -30,10 +31,10 @@ import org.slf4j.LoggerFactory;
 /**
  * SingleSqlParserFactory
  *
- * @author wenmo
  * @since 2021/6/14 16:49
  */
 public class SingleSqlParserFactory {
+    private SingleSqlParserFactory() {}
 
     protected static final Logger logger = LoggerFactory.getLogger(SingleSqlParserFactory.class);
 
@@ -62,7 +63,7 @@ public class SingleSqlParserFactory {
 
         if (tmp == null) {
             logger.error("sql: {} illegal.", sql);
-            return null;
+            return Collections.emptyMap();
         }
 
         return tmp.splitSql2Segment();

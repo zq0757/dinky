@@ -89,7 +89,7 @@ jobs:
       fail-fast: true
       matrix:
         jdk: [8, 11]
-        flink: [1.13, 1.14, 1.15, 1.16]
+        flink: [1.13, 1.14, 1.15, 1.16, 1.17]
 
     timeout-minutes: 30
     env:
@@ -123,9 +123,9 @@ jobs:
           ./mvnw -B clean install \
                   -Dmaven.test.skip=false \
                  -Dspotless.check.skip=true \
-                 -Denforcer.skip=true \
+                 -Denforcer.skip=false \
                  -Dmaven.javadoc.skip=true \
-                 -P prod,scala-2.12,flink-${{ matrix.flink }},maven-central \
+                 -P prod,scala-2.12,flink-single-version,flink-${{ matrix.flink }},maven-central \
                  --no-snapshot-updates
 
       # 检查打包的大小

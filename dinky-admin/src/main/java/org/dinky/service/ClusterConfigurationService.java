@@ -19,9 +19,9 @@
 
 package org.dinky.service;
 
-import org.dinky.db.service.ISuperService;
+import org.dinky.data.model.ClusterConfiguration;
 import org.dinky.gateway.result.TestResult;
-import org.dinky.model.ClusterConfiguration;
+import org.dinky.mybatis.service.ISuperService;
 
 import java.util.List;
 import java.util.Map;
@@ -29,7 +29,6 @@ import java.util.Map;
 /**
  * ClusterConfigService
  *
- * @author wenmo
  * @since 2021/11/6 20:52
  */
 public interface ClusterConfigurationService extends ISuperService<ClusterConfiguration> {
@@ -41,4 +40,6 @@ public interface ClusterConfigurationService extends ISuperService<ClusterConfig
     Map<String, Object> getGatewayConfig(Integer id);
 
     TestResult testGateway(ClusterConfiguration clusterConfiguration);
+
+    Boolean enable(Integer id);
 }

@@ -19,13 +19,10 @@
 
 package org.dinky.service;
 
-import org.dinky.db.service.ISuperService;
-import org.dinky.model.UDFTemplate;
+import org.dinky.data.model.UDFTemplate;
+import org.dinky.mybatis.service.ISuperService;
 
-/**
- * @author ZackYoung
- * @since 0.6.8
- */
+/** @since 0.6.8 */
 public interface UDFTemplateService extends ISuperService<UDFTemplate> {
 
     /**
@@ -35,4 +32,12 @@ public interface UDFTemplateService extends ISuperService<UDFTemplate> {
      * @return boolean
      */
     boolean saveOrUpdate(UDFTemplate udfTemplate);
+
+    /**
+     * enable or disable udf template
+     *
+     * @param id udf template id {@link UDFTemplate#id}
+     * @return {@link Boolean}
+     */
+    Boolean enable(Integer id);
 }

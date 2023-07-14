@@ -31,7 +31,6 @@ import lombok.extern.slf4j.Slf4j;
 /**
  * java 编译
  *
- * @author ZackYoung
  * @since 0.6.8
  */
 @Slf4j
@@ -49,7 +48,6 @@ public class JavaCompiler implements FunctionCompiler {
     public boolean compiler(UDF udf, ReadableConfig conf, Integer missionId) {
         ProcessEntity process = ProcessContextHolder.getProcess();
         process.info("正在编译 java 代码 , class: " + udf.getClassName());
-
         CustomStringJavaCompiler compiler = new CustomStringJavaCompiler(udf.getCode());
         boolean res = compiler.compilerToTmpPath(PathConstant.getUdfCompilerJavaPath(missionId));
         String className = compiler.getFullClassName();

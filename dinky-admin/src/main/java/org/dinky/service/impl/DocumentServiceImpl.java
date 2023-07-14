@@ -20,9 +20,9 @@
 package org.dinky.service.impl;
 
 import org.dinky.assertion.Asserts;
-import org.dinky.db.service.impl.SuperServiceImpl;
+import org.dinky.data.model.Document;
 import org.dinky.mapper.DocumentMapper;
-import org.dinky.model.Document;
+import org.dinky.mybatis.service.impl.SuperServiceImpl;
 import org.dinky.service.DocumentService;
 
 import java.util.List;
@@ -31,12 +31,7 @@ import org.springframework.stereotype.Service;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 
-/**
- * DocumentServiceImpl
- *
- * @author wenmo
- * @since 2021/6/3 14:36
- */
+/** DocumentServiceImpl */
 @Service
 public class DocumentServiceImpl extends SuperServiceImpl<DocumentMapper, Document>
         implements DocumentService {
@@ -49,5 +44,12 @@ public class DocumentServiceImpl extends SuperServiceImpl<DocumentMapper, Docume
         } else {
             return baseMapper.selectList(new QueryWrapper<Document>().eq("enabled", 1));
         }
+    }
+
+    @Override
+    public Boolean enable(Integer id) {
+        Document document = baseMapper.selectById(id);
+        document.setEnabled(!document.getEnabled());
+        return updateById(document);
     }
 }

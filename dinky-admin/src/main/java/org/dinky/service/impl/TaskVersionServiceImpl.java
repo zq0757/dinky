@@ -19,9 +19,9 @@
 
 package org.dinky.service.impl;
 
-import org.dinky.db.service.impl.SuperServiceImpl;
+import org.dinky.data.model.TaskVersion;
 import org.dinky.mapper.TaskVersionMapper;
-import org.dinky.model.TaskVersion;
+import org.dinky.mybatis.service.impl.SuperServiceImpl;
 import org.dinky.service.TaskVersionService;
 
 import java.util.List;
@@ -30,7 +30,6 @@ import org.springframework.stereotype.Service;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 
-/** @author huang */
 @Service
 public class TaskVersionServiceImpl extends SuperServiceImpl<TaskVersionMapper, TaskVersion>
         implements TaskVersionService {

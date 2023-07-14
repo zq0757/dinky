@@ -19,7 +19,7 @@
 
 package org.dinky.utils;
 
-import org.dinky.model.LineageRel;
+import org.dinky.data.model.LineageRel;
 
 import org.apache.calcite.plan.RelOptTable;
 import org.apache.calcite.rel.RelNode;
@@ -51,7 +51,6 @@ import java.util.Set;
 /**
  * LineageContext
  *
- * @author baisong
  * @since 2022/8/6 11:06
  */
 public class LineageContext {

@@ -19,9 +19,9 @@
 
 package org.dinky.controller;
 
-import org.dinky.common.result.ProTableResult;
-import org.dinky.common.result.Result;
-import org.dinky.model.History;
+import org.dinky.data.model.History;
+import org.dinky.data.result.ProTableResult;
+import org.dinky.data.result.Result;
 import org.dinky.service.HistoryService;
 
 import java.util.ArrayList;
@@ -41,7 +41,6 @@ import lombok.extern.slf4j.Slf4j;
 /**
  * HistoryController
  *
- * @author wenmo
  * @since 2021/6/26 23:09
  */
 @Slf4j
@@ -60,6 +59,7 @@ public class HistoryController {
 
     /** 批量删除 */
     @DeleteMapping
+    @Deprecated
     public Result<Void> deleteMul(@RequestBody JsonNode para) {
         if (para.size() > 0) {
             List<Integer> error = new ArrayList<>();
@@ -84,6 +84,6 @@ public class HistoryController {
     @PostMapping("/getOneById")
     public Result<History> getOneById(@RequestBody History history) throws Exception {
         history = historyService.getById(history.getId());
-        return Result.succeed(history, "获取成功");
+        return Result.succeed(history);
     }
 }

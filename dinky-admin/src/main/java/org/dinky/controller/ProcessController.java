@@ -19,8 +19,9 @@
 
 package org.dinky.controller;
 
-import org.dinky.common.result.ProTableResult;
-import org.dinky.common.result.Result;
+import org.dinky.data.enums.Status;
+import org.dinky.data.result.ProTableResult;
+import org.dinky.data.result.Result;
 import org.dinky.process.model.ProcessEntity;
 import org.dinky.service.ProcessService;
 
@@ -37,7 +38,6 @@ import lombok.RequiredArgsConstructor;
 /**
  * ProcessController
  *
- * @author wenmo
  * @since 2022/10/16 22:53
  */
 @RestController
@@ -47,20 +47,36 @@ public class ProcessController {
 
     private final ProcessService processService;
 
+    /**
+     * List all process
+     *
+     * @param active true: list active process, false: list inactive process {@link Boolean}
+     * @return {@link ProTableResult}<{@link ProcessEntity}>
+     */
     @GetMapping("/listAllProcess")
     public ProTableResult<ProcessEntity> listAllProcess(@RequestParam boolean active) {
         List<ProcessEntity> processEntities = processService.listAllProcess(active);
         return ProTableResult.<ProcessEntity>builder().success(true).data(processEntities).build();
     }
 
+    /**
+     * get process by user id
+     *
+     * @return {@link ProTableResult} <{@link String} >
+     */
     @GetMapping("/getConsoleByUserId")
     public Result<String> getConsoleByUserId() {
         return Result.data(processService.getConsoleByUserId(StpUtil.getLoginIdAsInt()));
     }
 
+    /**
+     * clear console by user id
+     *
+     * @return {@link Result} <{@link String}>
+     */
     @GetMapping("/clearConsole")
     public Result<String> clearConsole() {
         processService.clearConsoleByUserId(StpUtil.getLoginIdAsInt());
-        return Result.succeed("Clear succeed.");
+        return Result.succeed(Status.CLEAR_SUCCESS);
     }
 }

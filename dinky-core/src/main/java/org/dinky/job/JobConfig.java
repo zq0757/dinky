@@ -20,11 +20,11 @@
 package org.dinky.job;
 
 import org.dinky.assertion.Asserts;
-import org.dinky.constant.NetConstant;
+import org.dinky.data.constant.NetConstant;
 import org.dinky.executor.ExecutorSetting;
-import org.dinky.gateway.GatewayType;
 import org.dinky.gateway.config.GatewayConfig;
-import org.dinky.gateway.config.SavePointStrategy;
+import org.dinky.gateway.enums.GatewayType;
+import org.dinky.gateway.enums.SavePointStrategy;
 
 import org.apache.flink.configuration.CoreOptions;
 import org.apache.flink.configuration.RestOptions;
@@ -39,7 +39,6 @@ import lombok.Setter;
 /**
  * JobConfig
  *
- * @author wenmo
  * @since 2021/6/27 18:45
  */
 @Getter
@@ -85,7 +84,13 @@ public class JobConfig {
         if (GatewayType.LOCAL.equalsValue(type)
                 && Asserts.isNotNull(config)
                 && config.containsKey(RestOptions.PORT.key())) {
-            this.address = address + NetConstant.COLON + config.get(RestOptions.PORT.key());
+            int colonIndex = address.indexOf(':');
+            if (colonIndex == -1) {
+                this.address = address + NetConstant.COLON + config.get(RestOptions.PORT.key());
+            } else {
+                this.address =
+                        address.replaceAll("(?<=:)\\d{0,6}$", config.get(RestOptions.PORT.key()));
+            }
         } else {
             this.address = address;
         }

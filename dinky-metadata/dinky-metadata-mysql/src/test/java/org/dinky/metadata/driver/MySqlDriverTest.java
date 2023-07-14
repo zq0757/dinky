@@ -22,9 +22,9 @@ package org.dinky.metadata.driver;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
-import org.dinky.model.Column;
-import org.dinky.model.ColumnType;
-import org.dinky.model.Table;
+import org.dinky.data.enums.ColumnType;
+import org.dinky.data.model.Column;
+import org.dinky.data.model.Table;
 
 import java.util.Arrays;
 import java.util.List;
@@ -35,7 +35,6 @@ import org.junit.jupiter.api.Test;
 class MySqlDriverTest {
 
     private Table table;
-    private String flinkConfig;
 
     @BeforeEach
     void setUp() {
@@ -63,15 +62,12 @@ class MySqlDriverTest {
                                 .build());
 
         table = new Table("TableNameOrigin", "SchemaOrigin", columns);
-
-        flinkConfig =
-                "${schemaName}=schemaName, ${tableName}=tableName, ${abc}=abc, ${}=null, bcd=bcd";
     }
 
     @Test
     void genTable() {
         MySqlDriver sqlDriver = new MySqlDriver();
-        String gen_table_sql = sqlDriver.genTable(table);
+        String gen_table_sql = sqlDriver.getCreateTableSql(table);
 
         String expect =
                 "CREATE TABLE IF NOT EXISTS `SchemaOrigin`.`TableNameOrigin` (\n"

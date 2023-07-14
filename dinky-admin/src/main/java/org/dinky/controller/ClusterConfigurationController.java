@@ -20,10 +20,11 @@
 package org.dinky.controller;
 
 import org.dinky.assertion.Asserts;
-import org.dinky.common.result.ProTableResult;
-import org.dinky.common.result.Result;
+import org.dinky.data.enums.Status;
+import org.dinky.data.model.ClusterConfiguration;
+import org.dinky.data.result.ProTableResult;
+import org.dinky.data.result.Result;
 import org.dinky.gateway.result.TestResult;
-import org.dinky.model.ClusterConfiguration;
 import org.dinky.service.ClusterConfigurationService;
 
 import java.util.ArrayList;
@@ -35,6 +36,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -45,7 +47,6 @@ import lombok.extern.slf4j.Slf4j;
 /**
  * ClusterConfigController
  *
- * @author wenmo
  * @since 2021/11/6 21:16
  */
 @Slf4j
@@ -77,6 +78,7 @@ public class ClusterConfigurationController {
 
     /** 批量删除 */
     @DeleteMapping
+    @Deprecated
     public Result<Void> deleteMul(@RequestBody JsonNode para) {
         if (para.size() > 0) {
             List<Integer> error = new ArrayList<>();
@@ -98,25 +100,62 @@ public class ClusterConfigurationController {
 
     /** 获取指定ID的信息 */
     @PostMapping("/getOneById")
+    @Deprecated
     public Result<ClusterConfiguration> getOneById(
             @RequestBody ClusterConfiguration clusterConfiguration) {
         clusterConfiguration = clusterConfigurationService.getById(clusterConfiguration.getId());
-        return Result.succeed(clusterConfiguration, "获取成功");
+        return Result.succeed(clusterConfiguration);
     }
 
     /** 获取可用的集群列表 */
     @GetMapping("/listEnabledAll")
     public Result<List<ClusterConfiguration>> listEnabledAll() {
         List<ClusterConfiguration> clusters = clusterConfigurationService.listEnabledAll();
-        return Result.succeed(clusters, "获取成功");
+        return Result.succeed(clusters);
     }
 
-    /** 测试 */
+    /**
+     * delete by id
+     *
+     * @param id {@link Integer}
+     * @return {@link Result}<{@link Void}>
+     */
+    @DeleteMapping("/delete")
+    public Result<Void> deleteById(@RequestParam("id") Integer id) {
+        boolean removeById = clusterConfigurationService.removeById(id);
+        if (removeById) {
+            return Result.succeed(Status.DELETE_SUCCESS);
+        } else {
+            return Result.failed(Status.DELETE_FAILED);
+        }
+    }
+
+    /**
+     * enable by id
+     *
+     * @param id {@link Integer}
+     * @return {@link Result}<{@link Void}>
+     */
+    @PutMapping("/enable")
+    public Result<Void> enable(@RequestParam("id") Integer id) {
+        if (clusterConfigurationService.enable(id)) {
+            return Result.succeed(Status.MODIFY_SUCCESS);
+        } else {
+            return Result.failed(Status.MODIFY_FAILED);
+        }
+    }
+
+    /**
+     * test connection
+     *
+     * @param clusterConfiguration {@link ClusterConfiguration}
+     * @return {@link Result}<{@link Void}>
+     */
     @PostMapping("/testConnect")
     public Result<Void> testConnect(@RequestBody ClusterConfiguration clusterConfiguration) {
         TestResult testResult = clusterConfigurationService.testGateway(clusterConfiguration);
         if (testResult.isAvailable()) {
-            return Result.succeed("测试链接成功");
+            return Result.succeed(Status.TEST_CONNECTION_SUCCESS);
         } else {
             return Result.failed(testResult.getError());
         }

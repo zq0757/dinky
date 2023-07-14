@@ -19,10 +19,11 @@
 
 package org.dinky.controller;
 
-import org.dinky.common.result.ProTableResult;
-import org.dinky.common.result.Result;
-import org.dinky.model.AlertGroup;
-import org.dinky.model.AlertHistory;
+import org.dinky.data.enums.Status;
+import org.dinky.data.model.AlertGroup;
+import org.dinky.data.model.AlertHistory;
+import org.dinky.data.result.ProTableResult;
+import org.dinky.data.result.Result;
 import org.dinky.service.AlertGroupService;
 import org.dinky.service.AlertHistoryService;
 
@@ -35,6 +36,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -42,12 +44,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-/**
- * AlertGroupController
- *
- * @author wenmo
- * @since 2022/2/24 20:02
- */
+/** AlertGroupController */
 @Slf4j
 @RestController
 @RequestMapping("/api/alertGroup")
@@ -57,23 +54,40 @@ public class AlertGroupController {
     private final AlertGroupService alertGroupService;
     private final AlertHistoryService alertHistoryService;
 
-    /** 新增或者更新 */
+    /**
+     * save or update alert Group
+     *
+     * @param alertGroup {@link AlertGroup}
+     * @return {@link Result} with {@link Void}
+     * @throws Exception {@link Exception}
+     */
     @PutMapping
     public Result<Void> saveOrUpdate(@RequestBody AlertGroup alertGroup) throws Exception {
         if (alertGroupService.saveOrUpdate(alertGroup)) {
-            return Result.succeed("新增成功");
+            return Result.succeed(Status.SAVE_SUCCESS);
         } else {
-            return Result.failed("新增失败");
+            return Result.failed(Status.SAVE_FAILED);
         }
     }
 
-    /** 动态查询列表 */
+    /**
+     * list alert groups
+     *
+     * @param para {@link JsonNode}
+     * @return {@link ProTableResult} with {@link AlertGroup}
+     */
     @PostMapping
     public ProTableResult<AlertGroup> listAlertGroups(@RequestBody JsonNode para) {
         return alertGroupService.selectForProTable(para);
     }
 
-    /** 批量删除 */
+    /**
+     * batch Delete alert group , this method is {@link Deprecated} in the future , please use
+     * {@link #deleteGroupById(Integer)} instead
+     *
+     * @param para {@link JsonNode}
+     * @return {@link Result} with {@link Void}
+     */
     @DeleteMapping
     public Result<Void> deleteMul(@RequestBody JsonNode para) {
         if (para.size() > 0) {
@@ -94,20 +108,51 @@ public class AlertGroupController {
         }
     }
 
-    /** 获取指定ID的信息 */
-    @PostMapping("/getOneById")
-    public Result<AlertGroup> getOneById(@RequestBody AlertGroup alertGroup) throws Exception {
-        alertGroup = alertGroupService.getById(alertGroup.getId());
-        return Result.succeed(alertGroup, "获取成功");
-    }
-
-    /** 获取可用的报警组 */
+    /**
+     * get all enabled alert group
+     *
+     * @return {@link Result} with {@link List} of {@link AlertGroup}
+     */
     @GetMapping("/listEnabledAll")
     public Result<List<AlertGroup>> listEnabledAll() {
-        return Result.succeed(alertGroupService.listEnabledAll(), "获取成功");
+        return Result.succeed(alertGroupService.listEnabledAll());
     }
 
-    /** 动态查询列表 */
+    /**
+     * enable or disable alert group
+     *
+     * @return {@link Result} with {@link List} of {@link AlertGroup}
+     */
+    @PutMapping("/enable")
+    public Result<List<AlertGroup>> enable(@RequestParam("id") Integer id) {
+        if (alertGroupService.enable(id)) {
+            return Result.succeed(Status.MODIFY_SUCCESS);
+        } else {
+            return Result.failed(Status.MODIFY_FAILED);
+        }
+    }
+
+    /**
+     * delete alert group by id
+     *
+     * @param id {@link Integer}
+     * @return {@link Result} of {@link Void}
+     */
+    @DeleteMapping("/delete")
+    public Result<Void> deleteGroupById(@RequestParam("id") Integer id) {
+        if (alertGroupService.deleteGroupById(id)) {
+            return Result.succeed(Status.DELETE_SUCCESS);
+        } else {
+            return Result.failed(Status.DELETE_FAILED);
+        }
+    }
+
+    /**
+     * list alert history
+     *
+     * @param para {@link JsonNode}
+     * @return {@link ProTableResult} with {@link AlertHistory}
+     */
     @PostMapping("/history")
     public ProTableResult<AlertHistory> listAlertHistory(@RequestBody JsonNode para) {
         return alertHistoryService.selectForProTable(para);

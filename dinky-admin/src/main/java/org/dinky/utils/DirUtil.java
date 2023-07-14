@@ -20,8 +20,8 @@
 package org.dinky.utils;
 
 import org.dinky.assertion.Asserts;
-import org.dinky.exception.BusException;
-import org.dinky.model.FileNode;
+import org.dinky.data.exception.BusException;
+import org.dinky.data.model.FileNode;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -36,7 +36,6 @@ import cn.hutool.core.util.StrUtil;
 /**
  * DirUtil
  *
- * @author wenmo
  * @since 2022/10/14 21:43
  */
 public class DirUtil {

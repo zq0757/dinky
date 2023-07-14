@@ -19,10 +19,10 @@
 
 package org.dinky.job;
 
+import org.dinky.data.result.IResult;
 import org.dinky.executor.Executor;
 import org.dinky.executor.ExecutorSetting;
-import org.dinky.gateway.GatewayType;
-import org.dinky.result.IResult;
+import org.dinky.gateway.enums.GatewayType;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -33,7 +33,6 @@ import lombok.Setter;
 /**
  * Job
  *
- * @author wenmo
  * @since 2021/6/26 23:39
  */
 @Getter

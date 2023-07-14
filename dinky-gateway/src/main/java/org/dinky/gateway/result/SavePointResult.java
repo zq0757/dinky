@@ -19,7 +19,7 @@
 
 package org.dinky.gateway.result;
 
-import org.dinky.gateway.GatewayType;
+import org.dinky.gateway.enums.GatewayType;
 import org.dinky.gateway.model.JobInfo;
 
 import java.time.LocalDateTime;
@@ -31,7 +31,6 @@ import lombok.Setter;
 /**
  * TODO
  *
- * @author wenmo
  * @since 2021/11/3 22:20
  */
 @Getter

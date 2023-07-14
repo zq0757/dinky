@@ -21,7 +21,7 @@
     <parent>
         <groupId>org.dinky</groupId>
         <artifactId>dinky-metadata</artifactId>
-        <version>0.8.0</version>
+        <version>1.0.0-SNAPSHOT</version>
     </parent>
     <artifactId>dinky-metadata-postgresql</artifactId>
 
@@ -34,6 +34,19 @@
             <groupId>org.dinky</groupId>
             <artifactId>dinky-metadata-base</artifactId>
         </dependency>
+
+        <!-- test dependencies -->
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.vintage</groupId>
+            <artifactId>junit-vintage-engine</artifactId>
+            <scope>test</scope>
+        </dependency>
+
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
@@ -42,7 +55,7 @@
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
-            <!--            <scope>test</scope>-->
+            <scope>${scope.runtime}</scope>
         </dependency>
     </dependencies>
 

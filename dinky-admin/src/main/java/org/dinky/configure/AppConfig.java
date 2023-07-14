@@ -19,7 +19,7 @@
 
 package org.dinky.configure;
 
-import org.dinky.constant.BaseConstant;
+import org.dinky.data.constant.BaseConstant;
 import org.dinky.interceptor.LocaleChangeInterceptor;
 import org.dinky.interceptor.TenantInterceptor;
 
@@ -37,12 +37,10 @@ import cn.dev33.satoken.interceptor.SaInterceptor;
 /**
  * AppConfiguration
  *
- * @author wenmo
  * @since 2021/11/28 19:35
  */
 @Configuration
 public class AppConfig implements WebMvcConfigurer {
-
     /**
      * Cookie
      *
@@ -77,6 +75,7 @@ public class AppConfig implements WebMvcConfigurer {
         registry.addInterceptor(new SaInterceptor())
                 .addPathPatterns("/api/**")
                 .excludePathPatterns("/api/login")
+                .excludePathPatterns("/druid/**")
                 .excludePathPatterns("/openapi/**");
 
         registry.addInterceptor(new TenantInterceptor())
@@ -97,6 +96,7 @@ public class AppConfig implements WebMvcConfigurer {
                 .addPathPatterns("/api/task/**")
                 .addPathPatterns("/api/role/**")
                 .addPathPatterns("/api/fragment/**")
+                .addPathPatterns("/api/git/**")
                 .addPathPatterns("/api/jar/*");
     }
 }

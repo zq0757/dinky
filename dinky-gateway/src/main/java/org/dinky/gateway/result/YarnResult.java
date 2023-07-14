@@ -19,7 +19,7 @@
 
 package org.dinky.gateway.result;
 
-import org.dinky.gateway.GatewayType;
+import org.dinky.gateway.enums.GatewayType;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -27,7 +27,6 @@ import java.util.List;
 /**
  * YarnResult
  *
- * @author wenmo
  * @since 2021/10/29
  */
 public class YarnResult extends AbstractGatewayResult {

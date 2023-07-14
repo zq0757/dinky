@@ -25,7 +25,7 @@ import static org.apache.flink.util.Preconditions.checkNotNull;
 
 import org.dinky.assertion.Asserts;
 import org.dinky.constant.FlinkSQLConstant;
-import org.dinky.model.SystemConfiguration;
+import org.dinky.data.model.SystemConfiguration;
 
 import org.apache.flink.table.api.DataTypes;
 import org.apache.flink.table.api.ExpressionParserException;
@@ -41,7 +41,6 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -50,7 +49,6 @@ import java.util.regex.Pattern;
 /**
  * Flink Sql Fragment Manager
  *
- * @author wenmo
  * @since 2021/6/7 22:06
  */
 public final class SqlManager {
@@ -184,10 +182,6 @@ public final class SqlManager {
         return CustomTableResultImpl.buildTableResult(
                 Collections.singletonList(new TableSchemaField("fragmentName", DataTypes.STRING())),
                 rows);
-    }
-
-    public Iterator getSqlFragmentsIterator() {
-        return sqlFragments.entrySet().iterator();
     }
 
     public Table getSqlFragmentsTable(CustomTableEnvironmentImpl environment) {

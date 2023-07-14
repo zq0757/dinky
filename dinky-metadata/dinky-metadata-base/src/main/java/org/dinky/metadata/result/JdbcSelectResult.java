@@ -19,8 +19,8 @@
 
 package org.dinky.metadata.result;
 
-import org.dinky.result.AbstractResult;
-import org.dinky.result.IResult;
+import org.dinky.data.result.AbstractResult;
+import org.dinky.data.result.IResult;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -30,7 +30,6 @@ import java.util.List;
 /**
  * SelectResult
  *
- * @author wenmo
  * @since 2021/7/19 23:31
  */
 public class JdbcSelectResult extends AbstractResult implements IResult {

@@ -19,16 +19,19 @@
 
 package org.dinky.service;
 
-import org.dinky.db.service.ISuperService;
-import org.dinky.model.Statement;
+import org.dinky.data.model.Statement;
+import org.dinky.mybatis.service.ISuperService;
+
+import java.util.List;
 
 /**
  * StatementService
  *
- * @author wenmo
  * @since 2021/5/28 13:45
  */
 public interface StatementService extends ISuperService<Statement> {
 
     boolean insert(Statement statement);
+
+    List<String> getWatchTables(String statement);
 }

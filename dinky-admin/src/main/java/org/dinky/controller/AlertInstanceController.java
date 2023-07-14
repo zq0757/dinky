@@ -21,9 +21,10 @@ package org.dinky.controller;
 
 import org.dinky.alert.AlertPool;
 import org.dinky.alert.AlertResult;
-import org.dinky.common.result.ProTableResult;
-import org.dinky.common.result.Result;
-import org.dinky.model.AlertInstance;
+import org.dinky.data.enums.Status;
+import org.dinky.data.model.AlertInstance;
+import org.dinky.data.result.ProTableResult;
+import org.dinky.data.result.Result;
 import org.dinky.service.AlertInstanceService;
 
 import java.util.List;
@@ -34,6 +35,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -41,12 +43,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-/**
- * AlertInstanceController
- *
- * @author wenmo
- * @since 2022/2/24 19:54
- */
+/** AlertInstanceController */
 @Slf4j
 @RestController
 @RequestMapping("/api/alertInstance")
@@ -55,51 +52,100 @@ public class AlertInstanceController {
 
     private final AlertInstanceService alertInstanceService;
 
-    /** 新增或者更新 */
+    /**
+     * saveOrUpdate
+     *
+     * @param alertInstance {@link AlertInstance}
+     * @return {@link Result} of {@link Void}
+     * @throws Exception {@link Exception}
+     */
     @PutMapping
     public Result<Void> saveOrUpdate(@RequestBody AlertInstance alertInstance) throws Exception {
         if (alertInstanceService.saveOrUpdate(alertInstance)) {
             AlertPool.remove(alertInstance.getName());
-            return Result.succeed("新增成功");
+            return Result.succeed(Status.SAVE_SUCCESS);
         } else {
-            return Result.failed("新增失败");
+            return Result.failed(Status.SAVE_FAILED);
         }
     }
 
-    /** 动态查询列表 */
+    /**
+     * listAlertInstances
+     *
+     * @param para {@link JsonNode}
+     * @return {@link ProTableResult} of {@link AlertInstance}
+     */
     @PostMapping
     public ProTableResult<AlertInstance> listAlertInstances(@RequestBody JsonNode para) {
         return alertInstanceService.selectForProTable(para);
     }
 
-    /** 批量删除 */
+    /**
+     * batch Delete AlertInstance, this method is {@link Deprecated} and will be removed in the
+     * future, please use {@link #deleteInstanceById(Integer)} instead.
+     *
+     * @param para
+     * @return
+     */
     @DeleteMapping
+    @Deprecated
     public Result<Void> deleteMul(@RequestBody JsonNode para) {
         return alertInstanceService.deleteAlertInstance(para);
     }
 
-    /** 获取指定ID的信息 */
-    @PostMapping("/getOneById")
-    public Result<AlertInstance> getOneById(@RequestBody AlertInstance alertInstance)
-            throws Exception {
-        alertInstance = alertInstanceService.getById(alertInstance.getId());
-        return Result.succeed(alertInstance, "获取成功");
+    /**
+     * delete AlertInstance by id
+     *
+     * @param id {@link Integer}
+     * @return {@link Result} of {@link Void}
+     */
+    @DeleteMapping("/delete")
+    public Result<Void> deleteInstanceById(@RequestParam("id") Integer id) {
+        if (alertInstanceService.deleteAlertInstance(id)) {
+            return Result.succeed(Status.DELETE_SUCCESS);
+        } else {
+            return Result.failed(Status.DELETE_FAILED);
+        }
     }
 
-    /** 获取可用的报警实例列表 */
+    /**
+     * delete AlertInstance by id
+     *
+     * @param id {@link Integer}
+     * @return {@link Result} of {@link Void}
+     */
+    @PutMapping("/enable")
+    public Result<Void> enable(@RequestParam("id") Integer id) {
+        if (alertInstanceService.enable(id)) {
+            return Result.succeed(Status.MODIFY_SUCCESS);
+        } else {
+            return Result.failed(Status.MODIFY_FAILED);
+        }
+    }
+
+    /**
+     * get all enabled AlertInstance
+     *
+     * @return {@link Result} of {@link AlertInstance}
+     */
     @GetMapping("/listEnabledAll")
     public Result<List<AlertInstance>> listEnabledAll() {
-        return Result.succeed(alertInstanceService.listEnabledAll(), "获取成功");
+        return Result.succeed(alertInstanceService.listEnabledAll());
     }
 
-    /** 发送告警实例的测试信息 */
+    /**
+     * send test alert message
+     *
+     * @param alertInstance {@link AlertInstance}
+     * @return {@link Result} of {@link Void}
+     */
     @PostMapping("/sendTest")
     public Result<Void> sendTest(@RequestBody AlertInstance alertInstance) {
         AlertResult alertResult = alertInstanceService.testAlert(alertInstance);
         if (alertResult.getSuccess()) {
-            return Result.succeed("发送成功");
+            return Result.succeed(Status.SEND_TEST_SUCCESS);
         } else {
-            return Result.failed("发送失败");
+            return Result.failed(Status.SEND_TEST_FAILED);
         }
     }
 }

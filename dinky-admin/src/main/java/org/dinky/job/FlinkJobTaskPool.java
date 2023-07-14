@@ -19,13 +19,12 @@
 
 package org.dinky.job;
 
-import org.dinky.model.JobInfoDetail;
+import org.dinky.data.model.JobInfoDetail;
 import org.dinky.pool.AbstractPool;
 
 /**
  * FlinkJobTaskPool
  *
- * @author wenmo
  * @since 2022/5/28 16:39
  */
 public class FlinkJobTaskPool extends AbstractPool<String, JobInfoDetail> {

@@ -22,12 +22,26 @@ package org.dinky.service.impl;
 import org.dinky.api.FlinkAPI;
 import org.dinky.assertion.Asserts;
 import org.dinky.config.Dialect;
-import org.dinky.dto.AbstractStatementDTO;
-import org.dinky.dto.SqlDTO;
-import org.dinky.dto.StudioCADTO;
-import org.dinky.dto.StudioDDLDTO;
-import org.dinky.dto.StudioExecuteDTO;
-import org.dinky.dto.StudioMetaStoreDTO;
+import org.dinky.context.RowLevelPermissionsContext;
+import org.dinky.data.dto.AbstractStatementDTO;
+import org.dinky.data.dto.SqlDTO;
+import org.dinky.data.dto.StudioCADTO;
+import org.dinky.data.dto.StudioDDLDTO;
+import org.dinky.data.dto.StudioExecuteDTO;
+import org.dinky.data.dto.StudioMetaStoreDTO;
+import org.dinky.data.model.Catalog;
+import org.dinky.data.model.Cluster;
+import org.dinky.data.model.DataBase;
+import org.dinky.data.model.FlinkColumn;
+import org.dinky.data.model.RowPermissions;
+import org.dinky.data.model.Savepoints;
+import org.dinky.data.model.Schema;
+import org.dinky.data.model.Table;
+import org.dinky.data.model.Task;
+import org.dinky.data.result.DDLResult;
+import org.dinky.data.result.IResult;
+import org.dinky.data.result.SelectResult;
+import org.dinky.data.result.SqlExplainResult;
 import org.dinky.explainer.lineage.LineageBuilder;
 import org.dinky.explainer.lineage.LineageResult;
 import org.dinky.gateway.model.JobInfo;
@@ -37,28 +51,17 @@ import org.dinky.job.JobManager;
 import org.dinky.job.JobResult;
 import org.dinky.metadata.driver.Driver;
 import org.dinky.metadata.result.JdbcSelectResult;
-import org.dinky.model.Catalog;
-import org.dinky.model.Cluster;
-import org.dinky.model.DataBase;
-import org.dinky.model.FlinkColumn;
-import org.dinky.model.Savepoints;
-import org.dinky.model.Schema;
-import org.dinky.model.Table;
-import org.dinky.model.Task;
 import org.dinky.process.context.ProcessContextHolder;
+import org.dinky.process.enums.ProcessType;
 import org.dinky.process.model.ProcessEntity;
-import org.dinky.process.model.ProcessType;
-import org.dinky.result.DDLResult;
-import org.dinky.result.IResult;
-import org.dinky.result.SelectResult;
-import org.dinky.result.SqlExplainResult;
 import org.dinky.service.ClusterConfigurationService;
-import org.dinky.service.ClusterService;
+import org.dinky.service.ClusterInstanceService;
 import org.dinky.service.DataBaseService;
 import org.dinky.service.FragmentVariableService;
 import org.dinky.service.SavepointsService;
 import org.dinky.service.StudioService;
 import org.dinky.service.TaskService;
+import org.dinky.service.UserService;
 import org.dinky.sql.FlinkQuery;
 import org.dinky.utils.RunTimeUtil;
 
@@ -66,6 +69,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -79,24 +83,20 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import cn.dev33.satoken.stp.StpUtil;
 import lombok.RequiredArgsConstructor;
 
-/**
- * StudioServiceImpl
- *
- * @author wenmo
- * @since 2021/5/30 11:08
- */
+/** StudioServiceImpl */
 @Service
 @RequiredArgsConstructor
 public class StudioServiceImpl implements StudioService {
 
     private static final Logger logger = LoggerFactory.getLogger(StudioServiceImpl.class);
 
-    private final ClusterService clusterService;
+    private final ClusterInstanceService clusterInstanceService;
     private final ClusterConfigurationService clusterConfigurationService;
     private final SavepointsService savepointsService;
     private final DataBaseService dataBaseService;
     private final TaskService taskService;
     private final FragmentVariableService fragmentVariableService;
+    private final UserService userService;
 
     private void addFlinkSQLEnv(AbstractStatementDTO statementDTO) {
         ProcessEntity process = ProcessContextHolder.getProcess();
@@ -132,6 +132,23 @@ public class StudioServiceImpl implements StudioService {
                 process.info("No FlinkSQLEnv are loaded.");
             }
         }
+
+        process.info("Initializing data permissions...");
+        List<RowPermissions> currentRoleSelectPermissions =
+                userService.getCurrentRoleSelectPermissions();
+        if (Asserts.isNotNullCollection(currentRoleSelectPermissions)) {
+            ConcurrentHashMap<String, String> permission = new ConcurrentHashMap<>();
+            for (RowPermissions roleSelectPermissions : currentRoleSelectPermissions) {
+                if (Asserts.isAllNotNullString(
+                        roleSelectPermissions.getTableName(),
+                        roleSelectPermissions.getExpression())) {
+                    permission.put(
+                            roleSelectPermissions.getTableName(),
+                            roleSelectPermissions.getExpression());
+                }
+            }
+            RowLevelPermissionsContext.set(permission);
+        }
         process.info("Finish initialize FlinkSQLEnv.");
     }
 
@@ -139,7 +156,7 @@ public class StudioServiceImpl implements StudioService {
         // If you are using a shared session, configure the current jobManager address
         if (!config.isUseSession()) {
             config.setAddress(
-                    clusterService.buildEnvironmentAddress(
+                    clusterInstanceService.buildEnvironmentAddress(
                             config.isUseRemote(), config.getClusterId()));
         }
     }
@@ -193,7 +210,7 @@ public class StudioServiceImpl implements StudioService {
         process.info("Initializing database connection...");
         if (Asserts.isNull(sqlDTO.getDatabaseId())) {
             result.setSuccess(false);
-            result.setError("请指定数据源");
+            result.setError("please select a database.");
             result.setEndTimeNow();
             return result;
         }
@@ -228,7 +245,7 @@ public class StudioServiceImpl implements StudioService {
         JobConfig config = studioDDLDTO.getJobConfig();
         if (!config.isUseSession()) {
             config.setAddress(
-                    clusterService.buildEnvironmentAddress(
+                    clusterInstanceService.buildEnvironmentAddress(
                             config.isUseRemote(), studioDDLDTO.getClusterId()));
         }
         JobManager jobManager = JobManager.build(config);
@@ -364,7 +381,7 @@ public class StudioServiceImpl implements StudioService {
 
     @Override
     public List<JsonNode> listJobs(Integer clusterId) {
-        Cluster cluster = clusterService.getById(clusterId);
+        Cluster cluster = clusterInstanceService.getById(clusterId);
         Asserts.checkNotNull(cluster, "该集群不存在");
         try {
             return FlinkAPI.build(cluster.getJobManagerHost()).listJobs();
@@ -376,7 +393,7 @@ public class StudioServiceImpl implements StudioService {
 
     @Override
     public boolean cancel(Integer clusterId, String jobId) {
-        Cluster cluster = clusterService.getById(clusterId);
+        Cluster cluster = clusterInstanceService.getById(clusterId);
         Asserts.checkNotNull(cluster, "该集群不存在");
         JobConfig jobConfig = new JobConfig();
         jobConfig.setAddress(cluster.getJobManagerHost());
@@ -393,7 +410,7 @@ public class StudioServiceImpl implements StudioService {
     @Override
     public boolean savepoint(
             Integer taskId, Integer clusterId, String jobId, String savePointType, String name) {
-        Cluster cluster = clusterService.getById(clusterId);
+        Cluster cluster = clusterInstanceService.getById(clusterId);
 
         Asserts.checkNotNull(cluster, "该集群不存在");
         boolean useGateway = false;

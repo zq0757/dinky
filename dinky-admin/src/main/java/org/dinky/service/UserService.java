@@ -19,21 +19,24 @@
 
 package org.dinky.service;
 
-import org.dinky.common.result.Result;
-import org.dinky.db.service.ISuperService;
-import org.dinky.dto.LoginDTO;
-import org.dinky.dto.ModifyPasswordDTO;
-import org.dinky.dto.UserDTO;
-import org.dinky.model.Tenant;
-import org.dinky.model.User;
-import org.dinky.params.AssignRoleParams;
+import org.dinky.data.dto.LoginDTO;
+import org.dinky.data.dto.ModifyPasswordDTO;
+import org.dinky.data.dto.UserDTO;
+import org.dinky.data.model.Role;
+import org.dinky.data.model.RowPermissions;
+import org.dinky.data.model.Tenant;
+import org.dinky.data.model.User;
+import org.dinky.data.params.AssignRoleParams;
+import org.dinky.data.result.Result;
+import org.dinky.mybatis.service.ISuperService;
+
+import java.util.List;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
 /**
  * UserService
  *
- * @author wenmo
  * @since 2021/11/28 13:39
  */
 public interface UserService extends ISuperService<User> {
@@ -73,8 +76,8 @@ public interface UserService extends ISuperService<User> {
     /**
      * loginUser
      *
-     * @param loginDTO loginDTO
-     * @return {@link Result}<{@link UserDTO}>
+     * @param loginDTO basic information for user login
+     * @return {@link Result}{@link UserDTO} obtain the user's UserDTO
      */
     Result<UserDTO> loginUser(LoginDTO loginDTO);
 
@@ -108,14 +111,14 @@ public interface UserService extends ISuperService<User> {
      * choose tenant
      *
      * @param tenantId
-     * @return {@link Result}<{@link Tenant}>
+     * @return {@link Result}{@link Tenant} the specified tenant
      */
     Result<Tenant> chooseTenant(Integer tenantId);
 
     /**
      * get current user base info
      *
-     * @return {@link Result}<{@link UserDTO}>
+     * @return {@link Result}{@link UserDTO} obtain the current user's UserDTO
      */
     Result<UserDTO> queryCurrentUserInfo();
 
@@ -134,4 +137,28 @@ public interface UserService extends ISuperService<User> {
      * @return {@link Boolean}
      */
     Boolean checkAdmin(Integer id);
+
+    /**
+     * get role by current user
+     *
+     * @return role list
+     */
+    List<Role> getCurrentRole();
+
+    /**
+     * get role select permissions by current user
+     *
+     * @return role select permissions list
+     */
+    List<RowPermissions> getCurrentRoleSelectPermissions();
+
+    /** user loginout */
+    void outLogin();
+
+    /**
+     * get user ids where user in given tenant id
+     *
+     * @return role select permissions list
+     */
+    List<Integer> getUserIdsByTeantId(int id);
 }

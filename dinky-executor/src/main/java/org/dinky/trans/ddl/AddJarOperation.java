@@ -19,7 +19,7 @@
 
 package org.dinky.trans.ddl;
 
-import org.dinky.context.JarPathContextHolder;
+import org.dinky.context.FlinkUdfPathContextHolder;
 import org.dinky.executor.Executor;
 import org.dinky.parser.check.AddJarSqlParser;
 import org.dinky.trans.AbstractOperation;
@@ -27,13 +27,10 @@ import org.dinky.trans.Operation;
 
 import org.apache.flink.table.api.TableResult;
 
-/**
- * @author ZackYoung
- * @since 0.7.0
- */
+/** @since 0.7.0 */
 public class AddJarOperation extends AbstractOperation implements Operation {
 
-    private static final String KEY_WORD = "ADD JAR";
+    private static final String KEY_WORD = "ADD CUSTOMJAR";
 
     public AddJarOperation(String statement) {
         super(statement);
@@ -57,6 +54,7 @@ public class AddJarOperation extends AbstractOperation implements Operation {
     }
 
     public void init() {
-        AddJarSqlParser.getAllFilePath(statement).forEach(JarPathContextHolder::addOtherPlugins);
+        AddJarSqlParser.getAllFilePath(statement)
+                .forEach(FlinkUdfPathContextHolder::addOtherPlugins);
     }
 }

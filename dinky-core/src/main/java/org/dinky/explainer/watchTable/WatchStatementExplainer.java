@@ -33,9 +33,8 @@ public class WatchStatementExplainer {
 
     public static final String CREATE_SQL_TEMPLATE =
             "CREATE TABLE print_{0} WITH (''connector'' = ''printnet'', "
-                    + "''port''=''{2,number,#}'', ''hostName'' = ''{1}'', ''sink.parallelism''=''{3}'')\n"
-                    + "LIKE {0};";
-    public static final String INSERT_SQL_TEMPLATE = "insert into print_{0} select * from {0};";
+                    + "''port''=''{2,number,#}'', ''hostName'' = ''{1}'')\n"
+                    + "AS SELECT * FROM {0}";
     public static final int PORT = 7125;
 
     private final String statement;
@@ -44,20 +43,21 @@ public class WatchStatementExplainer {
         this.statement = statement;
     }
 
-    public String getTableName() {
+    public String[] getTableNames() {
+        return splitTableNames(statement);
+    }
+
+    public static String[] splitTableNames(String statement) {
         Matcher matcher = PATTERN.matcher(statement);
         matcher.find();
-        return matcher.group(1);
+        String tableNames = matcher.group(1);
+        return tableNames.replaceAll(" ", "").split(",");
     }
 
-    public String getCreateStatement(String tableName) {
+    public static String getCreateStatement(String tableName) {
         Optional<InetAddress> address = getSystemLocalIp();
         String ip = address.isPresent() ? address.get().getHostAddress() : "127.0.0.1";
-        return MessageFormat.format(CREATE_SQL_TEMPLATE, tableName, ip, PORT, 1);
-    }
-
-    public String getInsertStatement(String tableName) {
-        return MessageFormat.format(INSERT_SQL_TEMPLATE, tableName);
+        return MessageFormat.format(CREATE_SQL_TEMPLATE, tableName, ip, PORT);
     }
 
     private static Optional<InetAddress> getSystemLocalIp() {

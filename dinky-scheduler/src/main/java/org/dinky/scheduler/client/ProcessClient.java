@@ -19,7 +19,7 @@
 
 package org.dinky.scheduler.client;
 
-import org.dinky.scheduler.config.DolphinSchedulerProperties;
+import org.dinky.data.model.SystemConfiguration;
 import org.dinky.scheduler.constant.Constants;
 import org.dinky.scheduler.model.DagData;
 import org.dinky.scheduler.model.ProcessDefinition;
@@ -36,7 +36,6 @@ import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import cn.hutool.core.lang.TypeReference;
@@ -44,17 +43,11 @@ import cn.hutool.core.util.StrUtil;
 import cn.hutool.http.HttpRequest;
 import cn.hutool.json.JSONObject;
 
-/**
- * 工作流定义
- *
- * @author 郑文豪
- */
+/** 工作流定义 */
 @Component
 public class ProcessClient {
 
     private static final Logger logger = LoggerFactory.getLogger(TaskClient.class);
-
-    @Autowired private DolphinSchedulerProperties dolphinSchedulerProperties;
 
     /**
      * 查询工作流定义
@@ -62,21 +55,24 @@ public class ProcessClient {
      * @param projectCode 项目编号
      * @param processName 工作流定义名
      * @return {@link List<ProcessDefinition>}
-     * @author 郑文豪
-     * @date 2022/9/7 16:59
      */
     public List<ProcessDefinition> getProcessDefinition(Long projectCode, String processName) {
         Map<String, Object> map = new HashMap<>();
         map.put("projectCode", projectCode);
+
         String format =
                 StrUtil.format(
-                        dolphinSchedulerProperties.getUrl()
+                        SystemConfiguration.getInstances().getDolphinschedulerUrl().getValue()
                                 + "/projects/{projectCode}/process-definition",
                         map);
 
         String content =
                 HttpRequest.get(format)
-                        .header(Constants.TOKEN, dolphinSchedulerProperties.getToken())
+                        .header(
+                                Constants.TOKEN,
+                                SystemConfiguration.getInstances()
+                                        .getDolphinschedulerToken()
+                                        .getValue())
                         .form(ParamUtil.getPageParams(processName))
                         .timeout(5000)
                         .execute()
@@ -99,8 +95,6 @@ public class ProcessClient {
      * @param projectCode 项目编号
      * @param processName 工作流定义名
      * @return {@link ProcessDefinition}
-     * @author 郑文豪
-     * @date 2022/9/7 16:59
      */
     public ProcessDefinition getProcessDefinitionInfo(Long projectCode, String processName) {
 
@@ -119,8 +113,6 @@ public class ProcessClient {
      * @param projectCode 项目编号
      * @param processCode 任务编号
      * @return {@link DagData}
-     * @author 郑文豪
-     * @date 2022/9/13 14:33
      */
     public DagData getProcessDefinitionInfo(Long projectCode, Long processCode) {
         Map<String, Object> map = new HashMap<>();
@@ -128,13 +120,17 @@ public class ProcessClient {
         map.put("code", processCode);
         String format =
                 StrUtil.format(
-                        dolphinSchedulerProperties.getUrl()
+                        SystemConfiguration.getInstances().getDolphinschedulerUrl().getValue()
                                 + "/projects/{projectCode}/process-definition/{code}",
                         map);
 
         String content =
                 HttpRequest.get(format)
-                        .header(Constants.TOKEN, dolphinSchedulerProperties.getToken())
+                        .header(
+                                Constants.TOKEN,
+                                SystemConfiguration.getInstances()
+                                        .getDolphinschedulerToken()
+                                        .getValue())
                         .timeout(5000)
                         .execute()
                         .body();
@@ -149,8 +145,6 @@ public class ProcessClient {
      * @param projectCode 项目编号
      * @param processName 工作流定义名称
      * @return {@link ProcessDefinition}
-     * @author 郑文豪
-     * @date 2022/9/7 17:00
      */
     public ProcessDefinition createProcessDefinition(
             Long projectCode, String processName, Long taskCode, String taskDefinitionJson) {
@@ -158,7 +152,7 @@ public class ProcessClient {
         map.put("projectCode", projectCode);
         String format =
                 StrUtil.format(
-                        dolphinSchedulerProperties.getUrl()
+                        SystemConfiguration.getInstances().getDolphinschedulerUrl().getValue()
                                 + "/projects/{projectCode}/process-definition",
                         map);
 
@@ -177,7 +171,11 @@ public class ProcessClient {
 
         String content =
                 HttpRequest.post(format)
-                        .header(Constants.TOKEN, dolphinSchedulerProperties.getToken())
+                        .header(
+                                Constants.TOKEN,
+                                SystemConfiguration.getInstances()
+                                        .getDolphinschedulerToken()
+                                        .getValue())
                         .form(params)
                         .timeout(5000)
                         .execute()

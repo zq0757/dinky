@@ -24,17 +24,17 @@ import static org.dinky.utils.SplitUtil.getReValue;
 import static org.dinky.utils.SplitUtil.isSplit;
 
 import org.dinky.assertion.Asserts;
-import org.dinky.constant.CommonConstant;
+import org.dinky.data.constant.CommonConstant;
+import org.dinky.data.enums.TableType;
+import org.dinky.data.model.Column;
+import org.dinky.data.model.QueryData;
+import org.dinky.data.model.Schema;
+import org.dinky.data.model.Table;
+import org.dinky.data.result.SqlExplainResult;
 import org.dinky.metadata.query.IDBQuery;
 import org.dinky.metadata.result.JdbcSelectResult;
-import org.dinky.model.Column;
-import org.dinky.model.QueryData;
-import org.dinky.model.Schema;
-import org.dinky.model.Table;
-import org.dinky.model.TableType;
 import org.dinky.process.context.ProcessContextHolder;
 import org.dinky.process.model.ProcessEntity;
-import org.dinky.result.SqlExplainResult;
 import org.dinky.utils.LogUtil;
 import org.dinky.utils.TextUtil;
 
@@ -72,7 +72,6 @@ import cn.hutool.core.text.CharSequenceUtil;
 /**
  * AbstractJdbcDriver
  *
- * @author wenmo
  * @since 2021/7/20 14:09
  */
 public abstract class AbstractJdbcDriver extends AbstractDriver {
@@ -82,6 +81,7 @@ public abstract class AbstractJdbcDriver extends AbstractDriver {
     protected ThreadLocal<Connection> conn = new ThreadLocal<>();
 
     private DruidDataSource dataSource;
+    protected String validationQuery = "select 1";
 
     abstract String getDriverClass();
 
@@ -125,12 +125,12 @@ public abstract class AbstractJdbcDriver extends AbstractDriver {
     }
 
     protected void createDataSource(DruidDataSource ds, DriverConfig config) {
-        ds.setName(config.getName().replaceAll(":", ""));
+        ds.setName(config.getName().replaceAll("[^\\w]", ""));
         ds.setUrl(config.getUrl());
         ds.setDriverClassName(getDriverClass());
         ds.setUsername(config.getUsername());
         ds.setPassword(config.getPassword());
-        ds.setValidationQuery("select 1");
+        ds.setValidationQuery(validationQuery);
         ds.setTestWhileIdle(true);
         ds.setBreakAfterAcquireFailure(true);
         ds.setFailFast(true);
@@ -382,7 +382,7 @@ public abstract class AbstractJdbcDriver extends AbstractDriver {
                 if (columnList.contains(dbQuery.defaultValue())) {
                     field.setDefaultValue(results.getString(dbQuery.defaultValue()));
                 }
-                field.setJavaType(getTypeConvert().convert(field));
+                field.setJavaType(getTypeConvert().convert(field, config));
                 columns.add(field);
             }
         } catch (SQLException e) {
@@ -587,20 +587,21 @@ public abstract class AbstractJdbcDriver extends AbstractDriver {
                 column.setType(metaData.getColumnTypeName(i));
                 column.setAutoIncrement(metaData.isAutoIncrement(i));
                 column.setNullable(metaData.isNullable(i) == 0 ? false : true);
-                column.setJavaType(getTypeConvert().convert(column));
+                column.setJavaType(getTypeConvert().convert(column, config));
                 columns.add(column);
             }
             result.setColumns(columnNameList);
             while (results.next()) {
                 LinkedHashMap<String, Object> data = new LinkedHashMap<>();
-                for (int i = 0; i < columns.size(); i++) {
-                    data.put(
-                            columns.get(i).getName(),
-                            getTypeConvert()
-                                    .convertValue(
-                                            results,
-                                            columns.get(i).getName(),
-                                            columns.get(i).getType()));
+                for (Column column : columns) {
+                    String name = column.getName();
+                    String type = column.getType();
+                    Object value = getTypeConvert().convertValue(results, name, type);
+                    if (Asserts.isNotNull(value)) {
+                        data.put(name, value.toString());
+                    } else {
+                        data.put(name, null);
+                    }
                 }
                 datas.add(data);
                 count++;

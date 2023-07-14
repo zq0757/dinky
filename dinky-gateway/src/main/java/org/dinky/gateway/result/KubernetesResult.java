@@ -19,7 +19,7 @@
 
 package org.dinky.gateway.result;
 
-import org.dinky.gateway.GatewayType;
+import org.dinky.gateway.enums.GatewayType;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -27,7 +27,6 @@ import java.util.List;
 /**
  * KubernetesResult
  *
- * @author wenmo
  * @since 2021/12/26 15:06
  */
 public class KubernetesResult extends AbstractGatewayResult {

@@ -19,16 +19,15 @@
 
 package org.dinky.service;
 
-import org.dinky.db.service.ISuperService;
-import org.dinky.dto.CatalogueTaskDTO;
-import org.dinky.model.Catalogue;
+import org.dinky.data.dto.CatalogueTaskDTO;
+import org.dinky.data.model.Catalogue;
+import org.dinky.mybatis.service.ISuperService;
 
 import java.util.List;
 
 /**
  * CatalogueService
  *
- * @author wenmo
  * @since 2021/5/28 14:01
  */
 public interface CatalogueService extends ISuperService<Catalogue> {

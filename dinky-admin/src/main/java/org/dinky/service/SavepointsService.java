@@ -19,15 +19,14 @@
 
 package org.dinky.service;
 
-import org.dinky.db.service.ISuperService;
-import org.dinky.model.Savepoints;
+import org.dinky.data.model.Savepoints;
+import org.dinky.mybatis.service.ISuperService;
 
 import java.util.List;
 
 /**
  * Savepoints
  *
- * @author wenmo
  * @since 2021/11/21
  */
 public interface SavepointsService extends ISuperService<Savepoints> {

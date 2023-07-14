@@ -19,9 +19,10 @@
 
 package org.dinky.controller;
 
-import org.dinky.common.result.ProTableResult;
-import org.dinky.common.result.Result;
-import org.dinky.model.Document;
+import org.dinky.data.enums.Status;
+import org.dinky.data.model.Document;
+import org.dinky.data.result.ProTableResult;
+import org.dinky.data.result.Result;
 import org.dinky.service.DocumentService;
 
 import java.util.ArrayList;
@@ -41,12 +42,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-/**
- * DocumentController
- *
- * @author wenmo
- * @since 2021/6/3
- */
+/** DocumentController */
 @Slf4j
 @RestController
 @RequestMapping("/api/document")
@@ -55,24 +51,41 @@ public class DocumentController {
 
     private final DocumentService documentService;
 
-    /** 新增或者更新 */
+    /**
+     * save or update
+     *
+     * @param document {@link Document}
+     * @return {@link Result} of {@link Void}
+     * @throws Exception {@link Exception}
+     */
     @PutMapping
     public Result<Void> saveOrUpdate(@RequestBody Document document) throws Exception {
         if (documentService.saveOrUpdate(document)) {
-            return Result.succeed("新增成功");
+            return Result.succeed(Status.SAVE_SUCCESS);
         } else {
-            return Result.failed("新增失败");
+            return Result.failed(Status.SAVE_FAILED);
         }
     }
 
-    /** 动态查询列表 */
+    /**
+     * query documents
+     *
+     * @param para {@link JsonNode}
+     * @return {@link ProTableResult} of {@link Document}
+     */
     @PostMapping
     public ProTableResult<Document> listDocuments(@RequestBody JsonNode para) {
         return documentService.selectForProTable(para);
     }
 
-    /** 批量删除 */
+    /**
+     * batch delete, this method is deprecated, please use {@link #deleteMul(JsonNode)} instead.
+     *
+     * @param para
+     * @return
+     */
     @DeleteMapping
+    @Deprecated
     public Result<Void> deleteMul(@RequestBody JsonNode para) {
         if (para.size() > 0) {
             List<Integer> error = new ArrayList<>();
@@ -92,16 +105,45 @@ public class DocumentController {
         }
     }
 
-    /** 获取指定ID的信息 */
-    @PostMapping("/getOneById")
-    public Result<Document> getOneById(@RequestBody Document document) throws Exception {
-        document = documentService.getById(document.getId());
-        return Result.succeed(document, "获取成功");
+    /**
+     * delete document by id
+     *
+     * @param id {@link Integer}
+     * @return {@link Result} of {@link Void}
+     */
+    @DeleteMapping("/delete")
+    public Result<Void> deleteById(@RequestParam Integer id) {
+        if (documentService.removeById(id)) {
+            return Result.succeed(Status.DELETE_SUCCESS);
+        } else {
+            return Result.failed(Status.DELETE_FAILED);
+        }
     }
 
-    /** 根据版本号获取自动补全内容 */
+    /**
+     * delete document by id
+     *
+     * @param id {@link Integer}
+     * @return {@link Result} of {@link Void}
+     */
+    @PutMapping("/enable")
+    public Result<Void> enable(@RequestParam Integer id) {
+        if (documentService.enable(id)) {
+            return Result.succeed(Status.MODIFY_SUCCESS);
+        } else {
+            return Result.failed(Status.MODIFY_FAILED);
+        }
+    }
+
+    /**
+     * get document by version
+     *
+     * @param version {@link String}
+     * @return {@link Result} of {@link Document}
+     * @throws {@link Exception}
+     */
     @GetMapping("/getFillAllByVersion")
     public Result<List<Document>> getFillAllByVersion(@RequestParam String version) {
-        return Result.succeed(documentService.getFillAllByVersion(version), "获取成功");
+        return Result.succeed(documentService.getFillAllByVersion(version));
     }
 }

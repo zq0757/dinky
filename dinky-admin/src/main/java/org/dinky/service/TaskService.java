@@ -19,17 +19,19 @@
 
 package org.dinky.service;
 
-import org.dinky.common.result.Result;
-import org.dinky.db.service.ISuperService;
-import org.dinky.dto.TaskRollbackVersionDTO;
+import org.dinky.data.dto.TaskRollbackVersionDTO;
+import org.dinky.data.enums.JobLifeCycle;
+import org.dinky.data.enums.JobStatus;
+import org.dinky.data.model.JobInfoDetail;
+import org.dinky.data.model.JobInstance;
+import org.dinky.data.model.JobModelOverview;
+import org.dinky.data.model.JobTypeOverView;
+import org.dinky.data.model.Task;
+import org.dinky.data.result.Result;
+import org.dinky.data.result.SqlExplainResult;
+import org.dinky.data.result.TaskOperatingResult;
 import org.dinky.job.JobResult;
-import org.dinky.model.JobInfoDetail;
-import org.dinky.model.JobInstance;
-import org.dinky.model.JobLifeCycle;
-import org.dinky.model.JobStatus;
-import org.dinky.model.Task;
-import org.dinky.result.SqlExplainResult;
-import org.dinky.result.TaskOperatingResult;
+import org.dinky.mybatis.service.ISuperService;
 
 import java.util.List;
 
@@ -42,7 +44,6 @@ import cn.hutool.core.lang.tree.Tree;
 /**
  * 作业 服务类
  *
- * @author wenmo
  * @since 2021-05-28
  */
 public interface TaskService extends ISuperService<Task> {
@@ -120,4 +121,8 @@ public interface TaskService extends ISuperService<Task> {
     Task getTaskByNameAndTenantId(String name, Integer tenantId);
 
     JobStatus checkJobStatus(JobInfoDetail jobInfoDetail);
+
+    List<JobTypeOverView> getTaskOnlineRate();
+
+    JobModelOverview getJobStreamingOrBatchModelOverview();
 }

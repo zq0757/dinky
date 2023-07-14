@@ -20,17 +20,18 @@
 package org.dinky.service.impl;
 
 import org.dinky.assertion.Asserts;
-import org.dinky.constant.CommonConstant;
-import org.dinky.db.service.impl.SuperServiceImpl;
+import org.dinky.data.constant.CommonConstant;
+import org.dinky.data.enums.Status;
+import org.dinky.data.model.Column;
+import org.dinky.data.model.DataBase;
+import org.dinky.data.model.QueryData;
+import org.dinky.data.model.Schema;
+import org.dinky.data.model.SqlGeneration;
+import org.dinky.data.model.Table;
 import org.dinky.mapper.DataBaseMapper;
 import org.dinky.metadata.driver.Driver;
 import org.dinky.metadata.result.JdbcSelectResult;
-import org.dinky.model.Column;
-import org.dinky.model.DataBase;
-import org.dinky.model.QueryData;
-import org.dinky.model.Schema;
-import org.dinky.model.SqlGeneration;
-import org.dinky.model.Table;
+import org.dinky.mybatis.service.impl.SuperServiceImpl;
 import org.dinky.service.DataBaseService;
 
 import org.apache.commons.lang3.StringUtils;
@@ -47,7 +48,6 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 /**
  * DataBaseServiceImpl
  *
- * @author wenmo
  * @since 2021/7/20 23:47
  */
 @Service
@@ -60,7 +60,7 @@ public class DataBaseServiceImpl extends SuperServiceImpl<DataBaseMapper, DataBa
     }
 
     @Override
-    public boolean checkHeartBeat(DataBase dataBase) {
+    public Boolean checkHeartBeat(DataBase dataBase) {
         boolean isHealthy = false;
         dataBase.setHeartbeatTime(LocalDateTime.now());
         try {
@@ -81,7 +81,7 @@ public class DataBaseServiceImpl extends SuperServiceImpl<DataBaseMapper, DataBa
     }
 
     @Override
-    public boolean saveOrUpdateDataBase(DataBase dataBase) {
+    public Boolean saveOrUpdateDataBase(DataBase dataBase) {
         if (Asserts.isNull(dataBase)) {
             return false;
         }
@@ -110,6 +110,20 @@ public class DataBaseServiceImpl extends SuperServiceImpl<DataBaseMapper, DataBa
         }
     }
 
+    /**
+     * @param id
+     * @return
+     */
+    @Override
+    public Boolean enable(Integer id) {
+        DataBase dataBase = getById(id);
+        if (Asserts.isNull(dataBase)) {
+            return false;
+        }
+        dataBase.setEnabled(!dataBase.getEnabled());
+        return updateById(dataBase);
+    }
+
     @Override
     public List<DataBase> listEnabledAll() {
         return this.list(new QueryWrapper<DataBase>().eq("enabled", 1));
@@ -118,7 +132,7 @@ public class DataBaseServiceImpl extends SuperServiceImpl<DataBaseMapper, DataBa
     @Override
     public List<Schema> getSchemasAndTables(Integer id) {
         DataBase dataBase = getById(id);
-        Asserts.checkNotNull(dataBase, "该数据源不存在！");
+        Asserts.checkNotNull(dataBase, Status.DATASOURCE_NOT_EXIST.getMsg());
         Driver driver = Driver.build(dataBase.getDriverConfig());
         List<Schema> schemasAndTables = driver.getSchemasAndTables();
         driver.close();
@@ -128,7 +142,7 @@ public class DataBaseServiceImpl extends SuperServiceImpl<DataBaseMapper, DataBa
     @Override
     public List<Column> listColumns(Integer id, String schemaName, String tableName) {
         DataBase dataBase = getById(id);
-        Asserts.checkNotNull(dataBase, "该数据源不存在！");
+        Asserts.checkNotNull(dataBase, Status.DATASOURCE_NOT_EXIST.getMsg());
         Driver driver = Driver.build(dataBase.getDriverConfig());
         List<Column> columns = driver.listColumns(schemaName, tableName);
         driver.close();
@@ -138,7 +152,7 @@ public class DataBaseServiceImpl extends SuperServiceImpl<DataBaseMapper, DataBa
     @Override
     public String getFlinkTableSql(Integer id, String schemaName, String tableName) {
         DataBase dataBase = getById(id);
-        Asserts.checkNotNull(dataBase, "该数据源不存在！");
+        Asserts.checkNotNull(dataBase, Status.DATASOURCE_NOT_EXIST.getMsg());
         Driver driver = Driver.build(dataBase.getDriverConfig());
         List<Column> columns = driver.listColumns(schemaName, tableName);
         Table table = Table.build(tableName, schemaName, columns);
@@ -148,7 +162,7 @@ public class DataBaseServiceImpl extends SuperServiceImpl<DataBaseMapper, DataBa
     @Override
     public String getSqlSelect(Integer id, String schemaName, String tableName) {
         DataBase dataBase = getById(id);
-        Asserts.checkNotNull(dataBase, "该数据源不存在！");
+        Asserts.checkNotNull(dataBase, Status.DATASOURCE_NOT_EXIST.getMsg());
         Driver driver = Driver.build(dataBase.getDriverConfig());
         List<Column> columns = driver.listColumns(schemaName, tableName);
         Table table = Table.build(tableName, schemaName, columns);
@@ -158,7 +172,7 @@ public class DataBaseServiceImpl extends SuperServiceImpl<DataBaseMapper, DataBa
     @Override
     public String getSqlCreate(Integer id, String schemaName, String tableName) {
         DataBase dataBase = getById(id);
-        Asserts.checkNotNull(dataBase, "该数据源不存在！");
+        Asserts.checkNotNull(dataBase, Status.DATASOURCE_NOT_EXIST.getMsg());
         Driver driver = Driver.build(dataBase.getDriverConfig());
         List<Column> columns = driver.listColumns(schemaName, tableName);
         Table table = Table.build(tableName, schemaName, columns);
@@ -168,7 +182,7 @@ public class DataBaseServiceImpl extends SuperServiceImpl<DataBaseMapper, DataBa
     @Override
     public JdbcSelectResult queryData(QueryData queryData) {
         DataBase dataBase = getById(queryData.getId());
-        Asserts.checkNotNull(dataBase, "该数据源不存在！");
+        Asserts.checkNotNull(dataBase, Status.DATASOURCE_NOT_EXIST.getMsg());
         Driver driver = Driver.build(dataBase.getDriverConfig());
         StringBuilder queryOption = driver.genQueryOption(queryData);
         return driver.query(queryOption.toString(), null);
@@ -177,7 +191,7 @@ public class DataBaseServiceImpl extends SuperServiceImpl<DataBaseMapper, DataBa
     @Override
     public JdbcSelectResult execSql(QueryData queryData) {
         DataBase dataBase = getById(queryData.getId());
-        Asserts.checkNotNull(dataBase, "该数据源不存在！");
+        Asserts.checkNotNull(dataBase, Status.DATASOURCE_NOT_EXIST.getMsg());
         Driver driver = Driver.build(dataBase.getDriverConfig());
         long startTime = System.currentTimeMillis();
         JdbcSelectResult jdbcSelectResult = driver.query(queryData.getSql(), 500);
@@ -190,7 +204,7 @@ public class DataBaseServiceImpl extends SuperServiceImpl<DataBaseMapper, DataBa
     @Override
     public SqlGeneration getSqlGeneration(Integer id, String schemaName, String tableName) {
         DataBase dataBase = getById(id);
-        Asserts.checkNotNull(dataBase, "该数据源不存在！");
+        Asserts.checkNotNull(dataBase, Status.DATASOURCE_NOT_EXIST.getMsg());
         Driver driver = Driver.build(dataBase.getDriverConfig());
         Table table = driver.getTable(schemaName, tableName);
         SqlGeneration sqlGeneration = new SqlGeneration();
@@ -220,7 +234,7 @@ public class DataBaseServiceImpl extends SuperServiceImpl<DataBaseMapper, DataBa
     }
 
     @Override
-    public boolean copyDatabase(DataBase database) {
+    public Boolean copyDatabase(DataBase database) {
         String name = UUID.randomUUID().toString().replaceAll("-", "").substring(0, 10);
         database.setId(null);
         database.setName(

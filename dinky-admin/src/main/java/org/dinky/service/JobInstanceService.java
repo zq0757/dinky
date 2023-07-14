@@ -19,12 +19,12 @@
 
 package org.dinky.service;
 
-import org.dinky.common.result.ProTableResult;
-import org.dinky.db.service.ISuperService;
+import org.dinky.data.model.JobInfoDetail;
+import org.dinky.data.model.JobInstance;
+import org.dinky.data.model.JobInstanceStatus;
+import org.dinky.data.result.ProTableResult;
 import org.dinky.explainer.lineage.LineageResult;
-import org.dinky.model.JobInfoDetail;
-import org.dinky.model.JobInstance;
-import org.dinky.model.JobInstanceStatus;
+import org.dinky.mybatis.service.ISuperService;
 
 import java.util.List;
 
@@ -33,7 +33,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 /**
  * JobInstanceService
  *
- * @author wenmo
  * @since 2022/2/2 13:52
  */
 public interface JobInstanceService extends ISuperService<JobInstance> {

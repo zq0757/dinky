@@ -22,43 +22,20 @@
     <parent>
         <groupId>org.dinky</groupId>
         <artifactId>dinky-catalog</artifactId>
-        <version>0.8.0</version>
+        <version>1.0.0-SNAPSHOT</version>
     </parent>
+
     <artifactId>dinky-catalog-mysql</artifactId>
-
     <packaging>pom</packaging>
-
     <name>Dinky : Catalog : Mysql</name>
 
     <profiles>
         <profile>
-            <id>flink-1.13</id>
+            <id>flink-single-version</id>
             <modules>
-                <module>dinky-catalog-mysql-1.13</module>
+                <module>dinky-catalog-mysql-${dinky.flink.version}</module>
             </modules>
         </profile>
-
-        <profile>
-            <id>flink-1.14</id>
-            <modules>
-                <module>dinky-catalog-mysql-1.14</module>
-            </modules>
-        </profile>
-
-        <profile>
-            <id>flink-1.15</id>
-            <modules>
-                <module>dinky-catalog-mysql-1.15</module>
-            </modules>
-        </profile>
-
-        <profile>
-            <id>flink-1.16</id>
-            <modules>
-                <module>dinky-catalog-mysql-1.16</module>
-            </modules>
-        </profile>
-
         <profile>
             <id>flink-all</id>
             <modules>
@@ -66,6 +43,7 @@
                 <module>dinky-catalog-mysql-1.14</module>
                 <module>dinky-catalog-mysql-1.15</module>
                 <module>dinky-catalog-mysql-1.16</module>
+                <module>dinky-catalog-mysql-1.17</module>
             </modules>
         </profile>
     </profiles>

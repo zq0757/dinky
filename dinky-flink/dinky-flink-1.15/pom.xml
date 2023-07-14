@@ -21,7 +21,7 @@
     <parent>
         <groupId>org.dinky</groupId>
         <artifactId>dinky-flink</artifactId>
-        <version>0.8.0</version>
+        <version>1.0.0-SNAPSHOT</version>
     </parent>
     <artifactId>dinky-flink-1.15</artifactId>
 
@@ -147,6 +147,30 @@
         <dependency>
             <groupId>com.ververica</groupId>
             <artifactId>flink-sql-connector-oracle-cdc</artifactId>
+            <version>${flinkcdc.version}</version>
+        </dependency>
+
+        <!-- starrocks-connector-->
+        <dependency>
+            <groupId>com.starrocks</groupId>
+            <artifactId>flink-connector-starrocks</artifactId>
+            <version>1.2.6_flink-1.15</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.github.jsqlparser</groupId>
+                    <artifactId>jsqlparser</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <!-- postgres-connector-->
+        <dependency>
+            <groupId>com.ververica</groupId>
+            <artifactId>flink-sql-connector-postgres-cdc</artifactId>
+            <version>${flinkcdc.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.ververica</groupId>
+            <artifactId>flink-sql-connector-sqlserver-cdc</artifactId>
             <version>${flinkcdc.version}</version>
         </dependency>
         <dependency>

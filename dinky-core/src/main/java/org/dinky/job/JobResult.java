@@ -19,7 +19,7 @@
 
 package org.dinky.job;
 
-import org.dinky.result.IResult;
+import org.dinky.data.result.IResult;
 
 import java.time.LocalDateTime;
 
@@ -29,7 +29,6 @@ import lombok.Setter;
 /**
  * JobResult
  *
- * @author wenmo
  * @since 2021/6/29 23:56
  */
 @Getter

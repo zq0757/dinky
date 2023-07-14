@@ -19,12 +19,13 @@
 
 package org.dinky.process.model;
 
+import org.dinky.process.enums.ProcessStatus;
+
 import java.time.LocalDateTime;
 
 /**
  * ProcessStep
  *
- * @author wenmo
  * @since 2022/10/16 16:46
  */
 public class ProcessStep {

@@ -19,9 +19,9 @@
 
 package org.dinky.controller;
 
-import org.dinky.common.result.ProTableResult;
-import org.dinky.dto.TaskVersionHistoryDTO;
-import org.dinky.model.TaskVersion;
+import org.dinky.data.dto.TaskVersionHistoryDTO;
+import org.dinky.data.model.TaskVersion;
+import org.dinky.data.result.ProTableResult;
 import org.dinky.service.TaskVersionService;
 
 import java.util.List;
@@ -41,7 +41,6 @@ import lombok.extern.slf4j.Slf4j;
 /**
  * 任务版本 Controller
  *
- * @author wenmo
  * @since 2022-06-28
  */
 @Slf4j
@@ -63,20 +62,7 @@ public class TaskVersionController {
         BeanUtil.copyProperties(versionProTableResult, versionHistoryDTOProTableResult);
         List<TaskVersionHistoryDTO> collect =
                 versionProTableResult.getData().stream()
-                        .map(
-                                t -> {
-                                    TaskVersionHistoryDTO versionHistoryDTO =
-                                            new TaskVersionHistoryDTO();
-                                    versionHistoryDTO.setId(t.getId());
-                                    versionHistoryDTO.setTaskId(t.getTaskId());
-                                    versionHistoryDTO.setName(t.getName());
-                                    versionHistoryDTO.setDialect(t.getDialect());
-                                    versionHistoryDTO.setType(t.getType());
-                                    versionHistoryDTO.setStatement(t.getStatement());
-                                    versionHistoryDTO.setVersionId(t.getVersionId());
-                                    versionHistoryDTO.setCreateTime(t.getCreateTime());
-                                    return versionHistoryDTO;
-                                })
+                        .map(t -> BeanUtil.copyProperties(t, TaskVersionHistoryDTO.class))
                         .collect(Collectors.toList());
 
         versionHistoryDTOProTableResult.setData(collect);

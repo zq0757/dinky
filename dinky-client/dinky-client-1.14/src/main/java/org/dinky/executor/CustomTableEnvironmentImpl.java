@@ -20,8 +20,8 @@
 package org.dinky.executor;
 
 import org.dinky.assertion.Asserts;
-import org.dinky.model.LineageRel;
-import org.dinky.result.SqlExplainResult;
+import org.dinky.data.model.LineageRel;
+import org.dinky.data.result.SqlExplainResult;
 import org.dinky.utils.FlinkStreamProgramWithoutPhysical;
 import org.dinky.utils.LineageContext;
 
@@ -68,7 +68,9 @@ import org.apache.flink.table.operations.command.SetOperation;
 import org.apache.flink.table.planner.delegation.DefaultExecutor;
 import org.apache.flink.table.planner.plan.optimize.program.FlinkChainedProgram;
 import org.apache.flink.table.typeutils.FieldInfoUtils;
+import org.apache.flink.types.Row;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -80,10 +82,11 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
+import cn.hutool.core.util.ReflectUtil;
+
 /**
  * 定制TableEnvironmentImpl
  *
- * @author wenmo
  * @since 2021/10/22 10:02
  */
 public class CustomTableEnvironmentImpl extends AbstractCustomTableEnvironment {
@@ -183,6 +186,20 @@ public class CustomTableEnvironmentImpl extends AbstractCustomTableEnvironment {
                 executor,
                 settings.isStreamingMode(),
                 classLoader);
+    }
+
+    @Override
+    public Configuration getRootConfiguration() {
+        Method method =
+                ReflectUtil.getMethod(
+                        this.getStreamExecutionEnvironment().getClass(), "getConfiguration");
+        ReflectUtil.setAccessible(method);
+        try {
+            Object object = method.invoke(this.getStreamExecutionEnvironment());
+            return (Configuration) object;
+        } catch (IllegalAccessException | InvocationTargetException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private static Executor lookupExecutor(
@@ -342,6 +359,7 @@ public class CustomTableEnvironmentImpl extends AbstractCustomTableEnvironment {
             setMap.put(key, value);
             Configuration configuration = Configuration.fromMap(confMap);
             environment.getConfig().configure(configuration, null);
+            environment.getCheckpointConfig().configure(configuration);
             getConfig().addConfiguration(configuration);
         }
     }
@@ -360,6 +378,7 @@ public class CustomTableEnvironmentImpl extends AbstractCustomTableEnvironment {
             setMap.remove(key);
             Configuration configuration = Configuration.fromMap(confMap);
             environment.getConfig().configure(configuration, null);
+            environment.getCheckpointConfig().configure(configuration);
             getConfig().addConfiguration(configuration);
         } else {
             setMap.clear();
@@ -382,6 +401,12 @@ public class CustomTableEnvironmentImpl extends AbstractCustomTableEnvironment {
                 new LineageContext(
                         flinkChainedProgram, (TableEnvironmentImpl) streamTableEnvironment);
         return lineageContext.getLineage(statement);
+    }
+
+    @Override
+    public <T> void createTemporaryView(
+            String s, DataStream<Row> dataStream, List<String> columnNameList) {
+        createTemporaryView(s, fromChangelogStream(dataStream));
     }
 
     @Override

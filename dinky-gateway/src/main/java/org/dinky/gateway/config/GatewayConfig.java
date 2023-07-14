@@ -20,7 +20,7 @@
 package org.dinky.gateway.config;
 
 import org.dinky.assertion.Asserts;
-import org.dinky.gateway.GatewayType;
+import org.dinky.gateway.enums.GatewayType;
 
 import org.apache.http.util.TextUtils;
 
@@ -35,7 +35,6 @@ import lombok.Setter;
 /**
  * SubmitConfig
  *
- * @author wenmo
  * @since 2021/10/29
  */
 @Getter

@@ -5,7 +5,7 @@
     <parent>
         <groupId>org.dinky</groupId>
         <artifactId>dinky-app</artifactId>
-        <version>0.8.0</version>
+        <version>1.0.0-SNAPSHOT</version>
     </parent>
     <artifactId>dinky-app-1.16</artifactId>
 
@@ -23,25 +23,14 @@
             <artifactId>dinky-app-base</artifactId>
         </dependency>
         <dependency>
-            <groupId>mysql</groupId>
-            <artifactId>mysql-connector-java</artifactId>
+            <groupId>org.dinky</groupId>
+            <artifactId>dinky-client-${dinky.flink.version}</artifactId>
+            <scope>${scope.runtime}</scope>
         </dependency>
         <dependency>
             <groupId>org.dinky</groupId>
-            <artifactId>dinky-client-1.16</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.dinky</groupId>
-            <artifactId>dinky-flink-1.16</artifactId>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.dinky</groupId>
-            <artifactId>dinky-client-base</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.dinky</groupId>
-            <artifactId>dinky-executor</artifactId>
+            <artifactId>dinky-flink-${dinky.flink.version}</artifactId>
+            <scope>${scope.runtime}</scope>
         </dependency>
     </dependencies>
 

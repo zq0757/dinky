@@ -20,7 +20,7 @@
 package org.dinky.gateway.yarn;
 
 import org.dinky.assertion.Asserts;
-import org.dinky.gateway.GatewayType;
+import org.dinky.gateway.enums.GatewayType;
 import org.dinky.gateway.result.GatewayResult;
 import org.dinky.gateway.result.YarnResult;
 import org.dinky.utils.LogUtil;
@@ -34,7 +34,6 @@ import org.apache.hadoop.yarn.api.records.ApplicationId;
 /**
  * YarnSessionGateway
  *
- * @author wenmo
  * @since 2022/12/25
  */
 public class YarnSessionGateway extends YarnGateway {

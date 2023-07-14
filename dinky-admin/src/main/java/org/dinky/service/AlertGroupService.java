@@ -19,20 +19,42 @@
 
 package org.dinky.service;
 
-import org.dinky.db.service.ISuperService;
-import org.dinky.model.AlertGroup;
+import org.dinky.data.model.AlertGroup;
+import org.dinky.mybatis.service.ISuperService;
 
 import java.util.List;
 
-/**
- * AlertGroupService
- *
- * @author wenmo
- * @since 2022/2/24 20:00
- */
+/** AlertGroupService */
 public interface AlertGroupService extends ISuperService<AlertGroup> {
 
+    /**
+     * list all enabled alert group
+     *
+     * @return {@link List<AlertGroup>}
+     */
     List<AlertGroup> listEnabledAll();
 
+    /**
+     * get alert group info by id
+     *
+     * @param id {@link Integer}
+     * @return {@link AlertGroup}
+     */
     AlertGroup getAlertGroupInfo(Integer id);
+
+    /**
+     * alert group enable or disable by id
+     *
+     * @param id
+     * @return
+     */
+    Boolean enable(Integer id);
+
+    /**
+     * delete alert group by id and cascade delete alert history
+     *
+     * @param id {@link Integer}
+     * @return {@link Boolean}
+     */
+    Boolean deleteGroupById(Integer id);
 }
